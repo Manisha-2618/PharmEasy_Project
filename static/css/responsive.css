@@ -1,0 +1,231 @@
+/* ========================================================
+   PharmEasy Responsive Stylesheet
+   Mobile, Tablet, and Desktop Breakpoints
+   ======================================================== */
+
+@media (max-width: 1024px) {
+  .service-shortcuts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .categories-circles-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .lab-tests-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .featured-brands-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .articles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .product-listing-layout {
+    grid-template-columns: 220px 1fr;
+  }
+
+  .products-catalog-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .product-detail-layout {
+    grid-template-columns: 340px 1fr;
+    gap: 24px;
+    padding: 20px;
+  }
+
+  .footer-top-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-wrapper {
+    flex-wrap: wrap;
+  }
+
+  .search-bar-wrapper {
+    order: 3;
+    max-width: 100%;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .logo-area {
+    gap: 12px;
+  }
+
+  .brand-logo {
+    font-size: 22px;
+  }
+
+  .pincode-picker {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .hero-slide {
+    height: 240px;
+    padding: 0 24px;
+  }
+
+  .hero-title {
+    font-size: 22px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .hero-btn {
+    padding: 8px 18px;
+    font-size: 12px;
+  }
+
+  .service-shortcuts-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .service-tile-card {
+    padding: 14px;
+  }
+
+  .service-tile-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .rx-banner-section {
+    flex-direction: column;
+    padding: 24px 20px;
+    text-align: center;
+  }
+
+  .rx-steps-list {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .categories-circles-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+  }
+
+  .category-img-box {
+    width: 60px;
+    height: 60px;
+  }
+
+  .category-circle-name {
+    font-size: 10px;
+  }
+
+  .lab-tests-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-brands-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .articles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trust-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .product-listing-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-sidebar {
+    display: none; /* Can be toggled with filter button on mobile */
+  }
+
+  .filters-sidebar.active {
+    display: block;
+    margin-bottom: 20px;
+  }
+
+  .products-catalog-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .product-card {
+    min-width: 170px;
+    max-width: 170px;
+    padding: 10px;
+  }
+
+  .product-img-box {
+    height: 110px;
+  }
+
+  .product-title {
+    font-size: 12px;
+    height: 32px;
+  }
+
+  .product-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-img-box {
+    height: 260px;
+  }
+
+  .cart-layout-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-top-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .footer-bottom-bar {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .categories-circles-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .products-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .product-card {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .pincode-text {
+    display: none;
+  }
+
+  .action-link span {
+    display: none;
+  }
+
+  .cart-action-btn span {
+    display: inline;
+  }
+}
+

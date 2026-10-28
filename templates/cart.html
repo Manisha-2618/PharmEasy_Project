@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart ({{ summary.items_count }} items) | PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 24px; margin-bottom: 60px;">
+  
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">Shopping Cart</span>
+  </nav>
+
+  {% if summary['cart_items'] %}
+    <div class="cart-layout-grid">
+      
+      <!-- Left Column: Items List -->
+      <div>
+        <!-- Prescription notice if any item requires Rx -->
+        {% if summary.has_prescription_item %}
+          <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="fas fa-file-medical-alt" style="color: #e11d48; font-size: 24px;"></i>
+              <div style="font-size: 13px; color: #9f1239;">
+                <strong>Doctor's Prescription Required:</strong> One or more items in your cart require a valid prescription. You can upload it during checkout or via the upload portal.
+              </div>
+            </div>
+            <a href="{{ url_for('prescription') }}" class="btn-outline" style="border-color: #e11d48; color: #e11d48; font-size: 12px; padding: 6px 12px; white-space: nowrap;">
+              Upload Rx
+            </a>
+          </div>
+        {% endif %}
+
+        <div class="cart-items-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
+            <h2 style="font-size: 18px; font-weight: 800; color: var(--text-dark);">
+              {{ summary.items_count }} Items in Your Cart
+            </h2>
+            <button type="button" onclick="clearFullCart()" style="background: transparent; border: none; color: #ef4444; font-size: 13px; font-weight: 600; cursor: pointer;">
+              <i class="far fa-trash-alt"></i> Clear Cart
+            </button>
+          </div>
+
+          {% for item in summary['cart_items'] %}
+            <div class="cart-item-row">
+              <img src="{{ item.image_url }}" alt="{{ item.name }}" class="cart-item-img" />
+              
+              <div class="cart-item-info">
+                <a href="{{ url_for('product_detail', slug=item.slug) }}" class="cart-item-name" style="display: block;">
+                  {{ item.name }}
+                </a>
+                <div class="cart-item-packaging">{{ item.packaging }}</div>
+                
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                  <span style="font-size: 16px; font-weight: 800; color: var(--text-dark);">₹{{ "%.2f"|format(item.price) }}</span>
+                  <span style="font-size: 12px; color: var(--text-light); text-decoration: line-through;">₹{{ "%.2f"|format(item.mrp) }}</span>
+                  <span style="font-size: 11px; font-weight: 800; color: var(--accent-orange);">{{ item.discount_percent }}% OFF</span>
+                </div>
+              </div>
+
+              <!-- Quantity Counter -->
+              <div class="qty-counter">
+                <button type="button" class="qty-btn" onclick="updateItemQuantity({{ item.product_id }}, {{ item.quantity - 1 }})">-</button>
+                <span class="qty-value">{{ item.quantity }}</span>
+                <button type="button" class="qty-btn" onclick="updateItemQuantity({{ item.product_id }}, {{ item.quantity + 1 }})">+</button>
+              </div>
+
+              <!-- Subtotal & Remove -->
+              <div style="text-align: right; min-width: 90px;">
+                <div style="font-size: 16px; font-weight: 800; color: var(--primary);">₹{{ "%.2f"|format(item.item_subtotal) }}</div>
+                <button type="button" onclick="removeItemFromCart({{ item.product_id }})" style="background: none; border: none; color: #8897a2; font-size: 12px; cursor: pointer; margin-top: 4px;" title="Remove Item">
+                  <i class="fas fa-trash-alt"></i> Remove
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Delivery Address Preview Card -->
+        <div class="cart-items-card" style="margin-top: 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="fas fa-map-marker-alt" style="color: #10847e; font-size: 20px;"></i>
+              <div>
+                <div style="font-size: 14px; font-weight: 700;">Delivering to {{ user_pincode }} ({{ user_city }})</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Delivery within 24 to 48 hours</div>
+              </div>
+            </div>
+            <button type="button" class="btn-outline" style="font-size: 12px; padding: 6px 14px;" onclick="document.getElementById('pincode-picker-btn').click()">
+              Change Pincode
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Order Summary & Coupons -->
+      <div>
+        
+        <!-- Apply Coupon Card -->
+        <div class="cart-summary-card" style="margin-bottom: 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--text-dark); margin-bottom: 12px;">
+            <i class="fas fa-tag" style="color: #10847e; margin-right: 6px;"></i> Apply Coupon
+          </h3>
+
+          {% if summary.applied_coupon and not summary.applied_coupon.error %}
+            <div style="background: #e8f7f5; border: 1.5px dashed #10847e; border-radius: var(--radius-sm); padding: 12px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="font-size: 13px; font-weight: 800; color: #10847e;">{{ summary.applied_coupon.code }} Applied!</div>
+                <div style="font-size: 11px; color: var(--text-muted);">You saved ₹{{ summary.coupon_discount }} with this code.</div>
+              </div>
+              <button type="button" onclick="removeCouponCode()" style="background: none; border: none; color: #ef4444; font-size: 12px; font-weight: 700; cursor: pointer;">
+                Remove
+              </button>
+            </div>
+          {% else %}
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="coupon-input" class="form-control" placeholder="Enter coupon code (e.g. FIRST25)" style="text-transform: uppercase;" value="{{ active_coupon or '' }}" />
+              <button type="button" class="btn-primary" onclick="applyCouponCode()" style="padding: 0 18px;">
+                Apply
+              </button>
+            </div>
+          {% endif %}
+
+          <!-- Available Coupons Quick List -->
+          {% if coupons %}
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px;">Available Coupons:</div>
+              {% for c in coupons %}
+                <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                  <div>
+                    <span style="font-weight: 800; color: #10847e; background: #e8f7f5; padding: 2px 6px; border-radius: 4px;">{{ c.code }}</span>
+                    <span style="color: var(--text-muted); margin-left: 6px;">{{ c.title }}</span>
+                  </div>
+                  <button type="button" onclick="applyCouponCode('{{ c.code }}')" style="background: none; border: none; color: #10847e; font-weight: 700; cursor: pointer; text-decoration: underline;">
+                    Apply
+                  </button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Bill Details Card -->
+        <div class="cart-summary-card">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px;">
+            Bill Summary
+          </h3>
+
+          <div class="summary-line">
+            <span>Total MRP</span>
+            <span>₹{{ "%.2f"|format(summary.total_mrp) }}</span>
+          </div>
+
+          <div class="summary-line" style="color: #16a34a;">
+            <span>Discount on MRP</span>
+            <span>- ₹{{ "%.2f"|format(summary.total_savings) }}</span>
+          </div>
+
+          {% if summary.coupon_discount > 0 %}
+            <div class="summary-line" style="color: #10847e; font-weight: 600;">
+              <span>Coupon Discount ({{ summary.applied_coupon.code }})</span>
+              <span>- ₹{{ "%.2f"|format(summary.coupon_discount) }}</span>
+            </div>
+          {% endif %}
+
+          <div class="summary-line">
+            <span>Delivery Fee</span>
+            <span>
+              {% if summary.delivery_fee == 0 %}
+                <span style="color: #16a34a; font-weight: 700;">FREE</span>
+              {% else %}
+                ₹{{ "%.2f"|format(summary.delivery_fee) }}
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="summary-line">
+            <span>Platform Fee</span>
+            <span>₹{{ "%.2f"|format(summary.platform_fee) }}</span>
+          </div>
+
+          <div class="summary-line total-line">
+            <span>Total Payable Amount</span>
+            <span>₹{{ "%.2f"|format(summary.final_total) }}</span>
+          </div>
+
+          <div class="savings-highlight">
+            <i class="fas fa-piggy-bank"></i> Total Savings: ₹{{ "%.2f"|format(summary.total_savings + summary.coupon_discount) }}
+          </div>
+
+          <a href="{{ url_for('checkout', coupon=active_coupon) }}" class="btn-primary" style="width: 100%; margin-top: 18px; font-size: 15px; padding: 14px 0;">
+            Proceed to Checkout <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  {% else %}
+    <!-- Empty Cart State -->
+    <div style="background: #ffffff; border-radius: var(--radius-md); padding: 70px 20px; text-align: center; border: 1px solid var(--border-color); max-width: 600px; margin: 0 auto;">
+      <i class="fas fa-shopping-basket" style="font-size: 64px; color: #cbd5e1; margin-bottom: 20px;"></i>
+      <h2 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Your Shopping Cart is Empty</h2>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Add healthcare products, medicines, or wellness supplements to your cart.</p>
+      <div style="display: flex; justify-content: center; gap: 12px;">
+        <a href="{{ url_for('products', category='medicines') }}" class="btn-primary">
+          <i class="fas fa-pills"></i> Order Medicines
+        </a>
+        <a href="{{ url_for('products') }}" class="btn-outline">
+          Browse Healthcare
+        </a>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function clearFullCart() {
+  if (!confirm('Are you sure you want to empty your entire cart?')) return;
+  try {
+    const res = await fetch('/api/cart/clear', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      window.location.reload();
+    }
+  } catch (err) {
+    showToast('Failed to clear cart', 'error');
+  }
+}
+</script>
+{% endblock %}

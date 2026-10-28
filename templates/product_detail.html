@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Price, Uses, Side Effects | PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <a href="{{ url_for('products', category=product.category_slug) }}">{{ product.category_name }}</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">{{ product.name }}</span>
+  </nav>
+
+  <div class="product-detail-layout">
+    
+    <!-- Left Column: Product Image & Trust Indicators -->
+    <div>
+      <div class="detail-img-box">
+        <img src="{{ product.image_url }}" alt="{{ product.name }}" id="main-product-img" />
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; text-align: center;">
+        <div style="padding: 10px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <i class="fas fa-certificate" style="color: #10847e; font-size: 18px; margin-bottom: 4px;"></i>
+          <div style="font-size: 11px; font-weight: 700;">100% Genuine</div>
+        </div>
+        <div style="padding: 10px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <i class="fas fa-truck" style="color: #10847e; font-size: 18px; margin-bottom: 4px;"></i>
+          <div style="font-size: 11px; font-weight: 700;">Fast Delivery</div>
+        </div>
+        <div style="padding: 10px; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+          <i class="fas fa-undo-alt" style="color: #10847e; font-size: 18px; margin-bottom: 4px;"></i>
+          <div style="font-size: 11px; font-weight: 700;">Easy Returns</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Product Info & Actions -->
+    <div class="detail-info-box">
+      <div class="detail-brand-badge">
+        <a href="{{ url_for('products', brand=product.brand_slug) }}">Brand: {{ product.brand_name or 'Generic' }}</a>
+      </div>
+
+      <h1>{{ product.name }}</h1>
+      <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px;">Packaging: {{ product.packaging }}</div>
+
+      <!-- Rating & Reviews -->
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+        <div class="product-rating" style="margin-bottom: 0;">
+          <i class="fas fa-star"></i>
+          <span>{{ product.rating }}</span>
+        </div>
+        <span style="font-size: 13px; color: var(--text-muted);">{{ product.reviews_count }} Verified Ratings</span>
+      </div>
+
+      <!-- Prescription Alert if Required -->
+      {% if product.prescription_required %}
+        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px;">
+          <i class="fas fa-file-medical-alt" style="color: #e11d48; font-size: 20px;"></i>
+          <div style="font-size: 13px; color: #9f1239;">
+            <strong>Prescription Required:</strong> Please provide a valid prescription from a registered medical practitioner at checkout.
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Pricing Box -->
+      <div class="detail-price-box">
+        <span class="detail-price">₹{{ "%.2f"|format(product.price) }}</span>
+        <span class="detail-mrp">MRP ₹{{ "%.2f"|format(product.mrp) }}</span>
+        <span class="detail-discount-tag">{{ product.discount_percent }}% OFF</span>
+        <span style="font-size: 12px; color: #10847e; font-weight: 700; margin-left: auto;">Inclusive of all taxes</span>
+      </div>
+
+      <!-- Stock & Add to Cart -->
+      <div style="display: flex; align-items: center; gap: 18px; margin-bottom: 24px;">
+        <div class="qty-counter">
+          <button type="button" class="qty-btn" onclick="adjustDetailQty(-1)">-</button>
+          <input type="text" id="detail-qty-input" class="qty-value" value="1" readonly />
+          <button type="button" class="qty-btn" onclick="adjustDetailQty(1)">+</button>
+        </div>
+
+        <button type="button" class="btn-primary" id="detail-add-cart-btn" style="padding: 12px 32px; font-size: 15px;" onclick="addCurrentProductToCart()">
+          <i class="fas fa-shopping-basket"></i> Add to Cart
+        </button>
+
+        <a href="{{ url_for('prescription') }}" class="btn-outline" style="padding: 11px 20px; font-size: 14px;">
+          <i class="fas fa-file-upload"></i> Upload Prescription
+        </a>
+      </div>
+
+      <!-- Specifications Table -->
+      <table class="detail-spec-table">
+        <tbody>
+          {% if product.composition %}
+            <tr>
+              <th>Active Composition</th>
+              <td><strong>{{ product.composition }}</strong></td>
+            </tr>
+          {% endif %}
+          <tr>
+            <th>Category</th>
+            <td><a href="{{ url_for('products', category=product.category_slug) }}" style="color: #10847e; text-decoration: underline;">{{ product.category_name }}</a></td>
+          </tr>
+          <tr>
+            <th>Stock Status</th>
+            <td>
+              {% if product.stock > 0 %}
+                <span style="color: #16a34a; font-weight: 700;"><i class="fas fa-check-circle"></i> In Stock ({{ product.stock }} units available)</span>
+              {% else %}
+                <span style="color: #ef4444; font-weight: 700;"><i class="fas fa-times-circle"></i> Out of Stock</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th>Delivery to {{ user_pincode }}</th>
+            <td><i class="fas fa-bolt" style="color: #f59e0b; margin-right: 4px;"></i> Delivery in <strong>24 to 48 Hours</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Medical Details Accordions / Sections -->
+      <div style="margin-top: 24px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Product Description</h3>
+        <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;">
+          {{ product.description }}
+        </p>
+
+        {% if product.uses %}
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Therapeutic Uses</h3>
+          <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;">
+            {{ product.uses }}
+          </p>
+        {% endif %}
+
+        {% if product.dosage %}
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Recommended Dosage & Usage</h3>
+          <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;">
+            {{ product.dosage }}
+          </p>
+        {% endif %}
+
+        {% if product.side_effects %}
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Side Effects & Precautions</h3>
+          <p style="font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 20px;">
+            {{ product.side_effects }}
+          </p>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Related Products Carousel -->
+  {% if related_products %}
+    <section class="section-wrapper">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <h2 class="section-title">Similar Products in {{ product.category_name }}</h2>
+        </div>
+      </div>
+
+      <div class="carousel-scroll-container products-carousel-wrapper">
+        <button type="button" class="carousel-nav-btn prev track-nav-prev" aria-label="Previous">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <div class="products-carousel-track">
+          {% for rel in related_products %}
+            <div class="product-card">
+              <span class="product-discount-badge">{{ rel.discount_percent }}% OFF</span>
+              <a href="{{ url_for('product_detail', slug=rel.slug) }}" class="product-img-box">
+                <img src="{{ rel.image_url }}" alt="{{ rel.name }}" loading="lazy" />
+              </a>
+
+              <div class="product-brand">{{ rel.brand_name or 'Generic' }}</div>
+              <a href="{{ url_for('product_detail', slug=rel.slug) }}" class="product-title" title="{{ rel.name }}">
+                {{ rel.name }}
+              </a>
+              <div class="product-packaging">{{ rel.packaging }}</div>
+
+              <div class="product-price-row">
+                <span class="product-mrp">₹{{ "%.2f"|format(rel.mrp) }}</span>
+                <span class="product-price">₹{{ "%.2f"|format(rel.price) }}</span>
+              </div>
+
+              <button type="button" class="add-to-cart-btn" onclick="handleAddToCart({{ rel.id }}, 1, this)">
+                <i class="fas fa-shopping-basket"></i>
+                <span>Add to Cart</span>
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+
+        <button type="button" class="carousel-nav-btn next track-nav-next" aria-label="Next">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function adjustDetailQty(delta) {
+  const input = document.getElementById('detail-qty-input');
+  let val = parseInt(input.value) + delta;
+  if (val < 1) val = 1;
+  if (val > 20) val = 20;
+  input.value = val;
+}
+
+function addCurrentProductToCart() {
+  const qty = parseInt(document.getElementById('detail-qty-input').value) || 1;
+  const btn = document.getElementById('detail-add-cart-btn');
+  handleAddToCart({{ product.id }}, qty, btn);
+}
+</script>
+{% endblock %}
+

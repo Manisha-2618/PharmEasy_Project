@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout Demo | Secure Order Placement - PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 24px; margin-bottom: 60px;">
+  
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <a href="{{ url_for('cart') }}">Cart</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">Secure Checkout</span>
+  </nav>
+
+  <form id="checkout-form" onsubmit="handlePlaceOrder(event)">
+    <div class="cart-layout-grid">
+      
+      <!-- Left Column: Address, Delivery Slots & Payment Methods -->
+      <div>
+        
+        <!-- Step 1: Delivery Address -->
+        <div class="cart-items-card" style="margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+            <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+              <span style="width: 26px; height: 26px; border-radius: 50%; background: #10847e; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px;">1</span>
+              Delivery Address
+            </h2>
+          </div>
+
+          {% if addresses %}
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+              {% for addr in addresses %}
+                <label style="display: flex; gap: 12px; padding: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);" class="address-option-card">
+                  <input type="radio" name="address_id" value="{{ addr.id }}" {{ 'checked' if addr.is_default or loop.first else '' }} style="margin-top: 4px;" />
+                  <div>
+                    <div style="font-weight: 700; font-size: 14px;">{{ addr.full_name }} <span style="background: #e2e8f0; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">{{ addr.address_type }}</span></div>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">{{ addr.address_line1 }}, {{ addr.address_line2 }}</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</div>
+                    <div style="font-size: 12px; color: var(--text-light); margin-top: 4px;"><i class="fas fa-phone-alt" style="font-size: 10px;"></i> {{ addr.phone }}</div>
+                  </div>
+                </label>
+              {% endfor %}
+            </div>
+            
+            <button type="button" class="btn-outline" style="font-size: 12px; padding: 8px 14px;" onclick="toggleNewAddressForm()">
+              <i class="fas fa-plus"></i> Add Another Address
+            </button>
+          {% endif %}
+
+          <!-- Add New Address Fields -->
+          <div id="new-address-form-wrapper" style="{{ 'display: none;' if addresses else 'display: block;' }} margin-top: 18px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
+            <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 14px;">Enter Shipping Address:</h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div class="form-group">
+                <label class="form-label">Full Name *</label>
+                <input type="text" id="addr-name" class="form-control" placeholder="Recipient Name" value="{{ current_user.name if current_user else '' }}" {{ 'required' if not addresses else '' }} />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" id="addr-phone" class="form-control" placeholder="10-digit mobile number" value="{{ current_user.phone if current_user else '' }}" {{ 'required' if not addresses else '' }} />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">House / Flat / Street Address *</label>
+              <input type="text" id="addr-line1" class="form-control" placeholder="e.g. Flat 302, Green Avenue, Sector 18" {{ 'required' if not addresses else '' }} />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Landmark / Locality (Optional)</label>
+              <input type="text" id="addr-line2" class="form-control" placeholder="Near Apollo Clinic" />
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+              <div class="form-group">
+                <label class="form-label">Pincode *</label>
+                <input type="text" id="addr-pincode" class="form-control" placeholder="6-digit PIN" value="{{ user_pincode }}" maxlength="6" {{ 'required' if not addresses else '' }} />
+              </div>
+              <div class="form-group">
+                <label class="form-label">City *</label>
+                <input type="text" id="addr-city" class="form-control" placeholder="City" value="{{ user_city }}" {{ 'required' if not addresses else '' }} />
+              </div>
+              <div class="form-group">
+                <label class="form-label">State *</label>
+                <input type="text" id="addr-state" class="form-control" placeholder="State" value="Delhi" {{ 'required' if not addresses else '' }} />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Address Type</label>
+              <select id="addr-type" class="form-control" style="width: auto;">
+                <option value="Home">Home</option>
+                <option value="Work">Work / Office</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Delivery Slot -->
+        <div class="cart-items-card" style="margin-bottom: 24px;">
+          <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: #10847e; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px;">2</span>
+            Delivery Speed & Slot
+          </h2>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <label style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+              <input type="radio" name="delivery_slot" value="Standard Delivery (24-48 Hours)" checked />
+              <div>
+                <div style="font-weight: 700; font-size: 14px;">Standard Safe Delivery (24 to 48 Hours)</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Temperature controlled dispatch direct from pharmacy hub</div>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+              <input type="radio" name="delivery_slot" value="Next Day Priority Slot (By 12 PM)" />
+              <div>
+                <div style="font-weight: 700; font-size: 14px;">Next Day Priority Morning Delivery (By 12:00 PM)</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Express guaranteed morning slot</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 3: Payment Method -->
+        <div class="cart-items-card">
+          <h2 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: #10847e; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px;">3</span>
+            Select Payment Method (Simulation)
+          </h2>
+
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            
+            <label style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+              <input type="radio" name="payment_method" value="UPI" checked />
+              <div style="flex: 1;">
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fab fa-google-pay" style="color: #4285f4; font-size: 22px;"></i>
+                  <span>UPI (Google Pay, PhonePe, Paytm, BHIM)</span>
+                  <span style="background: #e8f7f5; color: #10847e; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: auto;">Instant Fast</span>
+                </div>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+              <input type="radio" name="payment_method" value="Credit/Debit Card" />
+              <div style="flex: 1;">
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                  <i class="far fa-credit-card" style="color: #10847e; font-size: 18px;"></i>
+                  <span>Credit / Debit Card (Visa, Mastercard, RuPay)</span>
+                </div>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+              <input type="radio" name="payment_method" value="Net Banking" />
+              <div style="flex: 1;">
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-university" style="color: #64748b; font-size: 18px;"></i>
+                  <span>Net Banking (All Major Indian Banks)</span>
+                </div>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 12px; padding: 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); cursor: pointer;">
+              <input type="radio" name="payment_method" value="COD" />
+              <div style="flex: 1;">
+                <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-hand-holding-usd" style="color: #16a34a; font-size: 18px;"></i>
+                  <span>Cash on Delivery (COD)</span>
+                </div>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Order Summary & Pay CTA -->
+      <div>
+        <div class="cart-summary-card">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px;">
+            Order Summary ({{ summary.items_count }} items)
+          </h3>
+
+          <div style="max-height: 200px; overflow-y: auto; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9;">
+            {% for item in summary['cart_items'] %}
+              <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px;">
+                <span style="color: var(--text-dark); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;">
+                  {{ item.quantity }}x {{ item.name }}
+                </span>
+                <span style="color: var(--text-dark); font-weight: 700;">₹{{ "%.2f"|format(item.item_subtotal) }}</span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="summary-line">
+            <span>Total MRP</span>
+            <span>₹{{ "%.2f"|format(summary.total_mrp) }}</span>
+          </div>
+
+          <div class="summary-line" style="color: #16a34a;">
+            <span>Discount</span>
+            <span>- ₹{{ "%.2f"|format(summary.total_savings) }}</span>
+          </div>
+
+          {% if summary.coupon_discount > 0 %}
+            <div class="summary-line" style="color: #10847e; font-weight: 600;">
+              <span>Coupon Discount ({{ summary.applied_coupon.code }})</span>
+              <span>- ₹{{ "%.2f"|format(summary.coupon_discount) }}</span>
+            </div>
+          {% endif %}
+
+          <div class="summary-line">
+            <span>Delivery Fee</span>
+            <span>
+              {% if summary.delivery_fee == 0 %}
+                <span style="color: #16a34a; font-weight: 700;">FREE</span>
+              {% else %}
+                ₹{{ "%.2f"|format(summary.delivery_fee) }}
+              {% endif %}
+            </span>
+          </div>
+
+          <div class="summary-line">
+            <span>Platform Fee</span>
+            <span>₹{{ "%.2f"|format(summary.platform_fee) }}</span>
+          </div>
+
+          <div class="summary-line total-line">
+            <span>Total Payable Amount</span>
+            <span>₹{{ "%.2f"|format(summary.final_total) }}</span>
+          </div>
+
+          <div class="savings-highlight">
+            <i class="fas fa-piggy-bank"></i> You are saving ₹{{ "%.2f"|format(summary.total_savings + summary.coupon_discount) }} on this order!
+          </div>
+
+          <button type="submit" id="place-order-btn" class="btn-primary" style="width: 100%; margin-top: 18px; font-size: 16px; padding: 14px 0;">
+            <i class="fas fa-lock"></i> Place Order & Pay ₹{{ "%.2f"|format(summary.final_total) }}
+          </button>
+
+          <div style="font-size: 11px; color: var(--text-light); text-align: center; margin-top: 12px;">
+            <i class="fas fa-shield-alt" style="color: #10847e;"></i> Safe 256-bit encrypted simulated transaction
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleNewAddressForm() {
+  const formWrapper = document.getElementById('new-address-form-wrapper');
+  if (formWrapper.style.display === 'none') {
+    formWrapper.style.display = 'block';
+    // uncheck radio
+    document.querySelectorAll('input[name="address_id"]').forEach(r => r.checked = false);
+    document.getElementById('addr-name').required = true;
+    document.getElementById('addr-phone').required = true;
+    document.getElementById('addr-line1').required = true;
+  } else {
+    formWrapper.style.display = 'none';
+    document.getElementById('addr-name').required = false;
+    document.getElementById('addr-phone').required = false;
+    document.getElementById('addr-line1').required = false;
+  }
+}
+</script>
+{% endblock %}

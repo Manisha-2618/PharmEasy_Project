@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Prescription | Order Medicines Online - PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 24px; margin-bottom: 60px;">
+  
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">Upload Prescription</span>
+  </nav>
+
+  <div class="cart-layout-grid" style="grid-template-columns: 1fr 380px;">
+    
+    <!-- Left Column: Upload Form & Dropzone -->
+    <div>
+      <div class="cart-items-card">
+        <h1 style="font-size: 22px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">
+          <i class="fas fa-file-medical-alt" style="color: #10847e; margin-right: 8px;"></i>
+          Upload Doctor's Prescription
+        </h1>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+          Upload a clear photo or digital PDF of your doctor's prescription. Our certified pharmacist will verify the medications and add them directly to your order.
+        </p>
+
+        <form action="{{ url_for('prescription') }}" method="POST" enctype="multipart/form-data" id="prescription-form">
+          
+          <!-- Drag & Drop Zone -->
+          <div id="drop-zone" style="border: 2px dashed #10847e; border-radius: var(--radius-md); padding: 36px 20px; text-align: center; background: #f0fdfc; cursor: pointer; transition: var(--transition); margin-bottom: 24px;">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 44px; color: #10847e; margin-bottom: 12px;"></i>
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px;">
+              Drag and drop your prescription here
+            </h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+              Supports JPG, PNG, WEBP, or PDF (Max 16 MB)
+            </p>
+            <button type="button" class="btn-primary" onclick="document.getElementById('file-input').click()" style="padding: 10px 24px;">
+              <i class="fas fa-folder-open"></i> Browse Files from Device
+            </button>
+            <input type="file" name="prescription_file" id="file-input" style="display: none;" accept=".jpg,.jpeg,.png,.webp,.pdf" required />
+
+            <!-- File Preview Area -->
+            <div id="file-preview-info" style="display: none; margin-top: 18px; padding: 12px; background: #ffffff; border-radius: var(--radius-sm); border: 1px solid var(--border-color); text-align: left;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <i class="fas fa-file-alt" style="color: #10847e; font-size: 24px;"></i>
+                  <div>
+                    <div id="preview-filename" style="font-weight: 700; font-size: 13px;">file.jpg</div>
+                    <div id="preview-filesize" style="font-size: 11px; color: var(--text-light);">1.2 MB</div>
+                  </div>
+                </div>
+                <button type="button" onclick="clearFileSelection()" style="background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer;">
+                  <i class="fas fa-times-circle"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Patient Details Fields -->
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 16px;">Patient Information</h3>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Patient Full Name *</label>
+              <input type="text" name="patient_name" class="form-control" placeholder="Patient's name as on prescription" value="{{ current_user.name if current_user else '' }}" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Mobile Number *</label>
+              <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number" value="{{ current_user.phone if current_user else '' }}" pattern="[0-9]{10}" required />
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Patient Age *</label>
+              <input type="number" name="patient_age" class="form-control" placeholder="Age in years" min="1" max="120" value="32" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Patient Gender</label>
+              <select name="patient_gender" class="form-control">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Delivery Pincode *</label>
+              <input type="text" name="delivery_pincode" class="form-control" value="{{ user_pincode }}" maxlength="6" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Special Doctor Instructions / Specific Dosage Notes (Optional)</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="e.g. Please deliver 30 days quantity or substitute with Cipla generic equivalent if unavailable"></textarea>
+          </div>
+
+          <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+            <input type="checkbox" name="request_callback" id="cb-callback" checked style="accent-color: #10847e; width: 16px; height: 16px;" />
+            <label for="cb-callback" style="font-size: 13px; color: var(--text-dark); cursor: pointer; font-weight: 500;">
+              Request pharmacist callback before order confirmation
+            </label>
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; font-size: 16px; padding: 14px 0; margin-top: 16px;">
+            <i class="fas fa-check-circle"></i> Submit Prescription for Review
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Valid Prescription Guide -->
+    <div>
+      <div class="cart-summary-card">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 14px;">
+          <i class="fas fa-info-circle" style="color: #10847e; margin-right: 6px;"></i> What is a Valid Prescription?
+        </h3>
+
+        <div style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+          Government regulations require a legally valid prescription containing the following 4 critical elements:
+        </div>
+
+        <ul style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; margin-bottom: 20px;">
+          <li style="display: flex; gap: 10px;">
+            <i class="fas fa-check-circle" style="color: #16a34a; margin-top: 2px;"></i>
+            <span><strong>Doctor's Details:</strong> Name, Clinic/Hospital stamp, and Medical Registration Number.</span>
+          </li>
+          <li style="display: flex; gap: 10px;">
+            <i class="fas fa-check-circle" style="color: #16a34a; margin-top: 2px;"></i>
+            <span><strong>Patient Information:</strong> Patient name, age, and consultation date.</span>
+          </li>
+          <li style="display: flex; gap: 10px;">
+            <i class="fas fa-check-circle" style="color: #16a34a; margin-top: 2px;"></i>
+            <span><strong>Medication Specifics:</strong> Exact medicine name, strength, dosage schedule, and duration.</span>
+          </li>
+          <li style="display: flex; gap: 10px;">
+            <i class="fas fa-check-circle" style="color: #16a34a; margin-top: 2px;"></i>
+            <span><strong>Doctor Signature:</strong> Physical or digital authorized medical signature.</span>
+          </li>
+        </ul>
+
+        <div style="background: #f8fafc; border-radius: var(--radius-sm); padding: 14px; border: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted);">
+          <i class="fas fa-lock" style="color: #10847e; margin-right: 4px;"></i>
+          <strong>Privacy Guarantee:</strong> Your medical prescriptions are encrypted and accessible exclusively by our registered pharmacists.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fileInput = document.getElementById('file-input');
+const dropZone = document.getElementById('drop-zone');
+const previewInfo = document.getElementById('file-preview-info');
+const previewName = document.getElementById('preview-filename');
+const previewSize = document.getElementById('preview-filesize');
+
+fileInput.addEventListener('change', handleFile);
+
+// Drag & drop listeners
+['dragenter', 'dragover'].forEach(eventName => {
+  dropZone.addEventListener(eventName, (e) => {
+    e.preventDefault();
+    dropZone.style.background = '#e0f7f5';
+  });
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+  dropZone.addEventListener(eventName, (e) => {
+    e.preventDefault();
+    dropZone.style.background = '#f0fdfc';
+  });
+});
+
+dropZone.addEventListener('drop', (e) => {
+  const dt = e.dataTransfer;
+  const files = dt.files;
+  if (files.length > 0) {
+    fileInput.files = files;
+    handleFile();
+  }
+});
+
+function handleFile() {
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const validExtensions = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    if (!validExtensions.includes(ext)) {
+      showToast('Invalid file format. Please upload JPG, PNG, WEBP, or PDF.', 'error');
+      clearFileSelection();
+      return;
+    }
+
+    if (file.size > 16 * 1024 * 1024) {
+      showToast('File size exceeds 16 MB limit.', 'error');
+      clearFileSelection();
+      return;
+    }
+
+    previewName.textContent = file.name;
+    previewSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+    previewInfo.style.display = 'block';
+  }
+}
+
+function clearFileSelection() {
+  fileInput.value = '';
+  previewInfo.style.display = 'none';
+}
+</script>
+{% endblock %}
+

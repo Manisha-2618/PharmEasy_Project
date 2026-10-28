@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results for "{{ query }}" | PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 24px; margin-bottom: 50px;">
+  
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">Search</span>
+  </nav>
+
+  <!-- Search Header -->
+  <div class="catalog-header-bar" style="margin-bottom: 24px;">
+    <div>
+      <h1 style="font-size: 20px; font-weight: 800; color: var(--text-dark);">
+        Search Results for <span style="color: var(--primary);">"{{ query }}"</span>
+      </h1>
+      <span style="font-size: 13px; color: var(--text-muted);">{{ total_results }} medicines and health products found</span>
+    </div>
+
+    <!-- Sorting -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Sort By:</span>
+      <select class="form-control" style="width: auto; padding: 6px 12px;" onchange="handleSortChange(this.value)">
+        <option value="popular" {{ 'selected' if selected_sort == 'popular' else '' }}>Popularity</option>
+        <option value="discount" {{ 'selected' if selected_sort == 'discount' else '' }}>Discount (High to Low)</option>
+        <option value="price_low" {{ 'selected' if selected_sort == 'price_low' else '' }}>Price (Low to High)</option>
+        <option value="price_high" {{ 'selected' if selected_sort == 'price_high' else '' }}>Price (High to Low)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Category filter chips -->
+  <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 20px;">
+    <a href="{{ url_for('search', q=query, sort=selected_sort) }}" class="seo-link-tag" style="{{ 'background: #10847e; color: #fff;' if selected_category == 'all' else '' }}">
+      All Categories
+    </a>
+    {% for cat in categories %}
+      <a href="{{ url_for('search', q=query, category=cat.slug, sort=selected_sort) }}" class="seo-link-tag" style="{{ 'background: #10847e; color: #fff;' if selected_category == cat.slug else '' }}">
+        {{ cat.name }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Search Products Grid -->
+  {% if products %}
+    <div class="products-catalog-grid" style="grid-template-columns: repeat(4, 1fr);">
+      {% for prod in products %}
+        <div class="product-card" style="min-width: 100%; max-width: 100%;">
+          <span class="product-discount-badge">{{ prod.discount_percent }}% OFF</span>
+          {% if prod.prescription_required %}
+            <span class="rx-required-badge">Rx</span>
+          {% endif %}
+
+          <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-img-box">
+            <img src="{{ prod.image_url }}" alt="{{ prod.name }}" loading="lazy" />
+          </a>
+
+          <div class="product-brand">{{ prod.brand_name or 'Generic' }}</div>
+          <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-title" title="{{ prod.name }}">
+            {{ prod.name }}
+          </a>
+          <div class="product-packaging">{{ prod.packaging }}</div>
+
+          <div class="product-rating">
+            <i class="fas fa-star"></i>
+            <span>{{ prod.rating }}</span>
+            <span style="color: #64748b; font-weight: normal; margin-left: 2px;">({{ prod.reviews_count }})</span>
+          </div>
+
+          <div class="product-price-row">
+            <span class="product-mrp">₹{{ "%.2f"|format(prod.mrp) }}</span>
+            <span class="product-price">₹{{ "%.2f"|format(prod.price) }}</span>
+          </div>
+
+          <button type="button" class="add-to-cart-btn" onclick="handleAddToCart({{ prod.id }}, 1, this)">
+            <i class="fas fa-shopping-basket"></i>
+            <span>Add to Cart</span>
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="background: #ffffff; border-radius: var(--radius-md); padding: 60px 20px; text-align: center; border: 1px solid var(--border-color);">
+      <i class="fas fa-search" style="font-size: 48px; color: #cbd5e1; margin-bottom: 16px;"></i>
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">No results found for "{{ query }}"</h2>
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">Please check your spelling or try searching with generic composition (e.g. Paracetamol, Metformin, Vitamin C).</p>
+      
+      <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px;">Suggested Popular Searches:</div>
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;">
+        <a href="{{ url_for('search', q='Dolo') }}" class="seo-link-tag">Dolo 650</a>
+        <a href="{{ url_for('search', q='Pan 40') }}" class="seo-link-tag">Pan 40</a>
+        <a href="{{ url_for('search', q='Vitamin') }}" class="seo-link-tag">Multivitamins</a>
+        <a href="{{ url_for('search', q='BP Monitor') }}" class="seo-link-tag">Blood Pressure Monitor</a>
+        <a href="{{ url_for('search', q='Chyawanprash') }}" class="seo-link-tag">Dabur Chyawanprash</a>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function handleSortChange(sortVal) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('sort', sortVal);
+  window.location.href = url.toString();
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if active_category %}{{ active_category.name }} - {% endif %}Healthcare Products & Medicines - PharmEasy
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <a href="{{ url_for('products') }}">Healthcare Store</a>
+    {% if active_category %}
+      <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+      <span style="color: var(--text-dark); font-weight: 600;">{{ active_category.name }}</span>
+    {% endif %}
+  </nav>
+
+  <div class="product-listing-layout">
+    
+    <!-- Left Filters Sidebar -->
+    <aside class="filters-sidebar" id="filters-sidebar">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark);"><i class="fas fa-sliders-h" style="color: #10847e; margin-right: 6px;"></i> Filters</h3>
+        <a href="{{ url_for('products') }}" style="font-size: 12px; color: var(--primary); font-weight: 700;">Clear All</a>
+      </div>
+
+      <!-- Categories Filter -->
+      <div class="filter-group">
+        <h4 class="filter-title">Categories</h4>
+        <label class="filter-item-label">
+          <input type="radio" name="cat_filter" onchange="window.location.href='{{ url_for('products', brand=selected_brand, sort=selected_sort) }}'" {{ 'checked' if selected_category == 'all' else '' }} />
+          <span>All Categories</span>
+        </label>
+        {% for cat in categories %}
+          <label class="filter-item-label">
+            <input type="radio" name="cat_filter" onchange="window.location.href='{{ url_for('products', category=cat.slug, brand=selected_brand, sort=selected_sort) }}'" {{ 'checked' if selected_category == cat.slug else '' }} />
+            <span>{{ cat.name }}</span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <!-- Brands Filter -->
+      <div class="filter-group">
+        <h4 class="filter-title">Brands</h4>
+        <label class="filter-item-label">
+          <input type="radio" name="brand_filter" onchange="window.location.href='{{ url_for('products', category=selected_category, sort=selected_sort) }}'" {{ 'checked' if selected_brand == 'all' else '' }} />
+          <span>All Brands</span>
+        </label>
+        {% for b in brands %}
+          <label class="filter-item-label">
+            <input type="radio" name="brand_filter" onchange="window.location.href='{{ url_for('products', category=selected_category, brand=b.slug, sort=selected_sort) }}'" {{ 'checked' if selected_brand == b.slug else '' }} />
+            <span>{{ b.name }}</span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <!-- Prescription Requirement -->
+      <div class="filter-group">
+        <h4 class="filter-title">Prescription Required</h4>
+        <label class="filter-item-label">
+          <input type="checkbox" onchange="toggleRxFilter(this)" {{ 'checked' if prescription_only else '' }} />
+          <span>Prescription Drugs Only (Rx)</span>
+        </label>
+      </div>
+    </aside>
+
+    <!-- Main Products Grid Area -->
+    <section>
+      <!-- Catalog Header Bar -->
+      <div class="catalog-header-bar">
+        <div>
+          <h1 style="font-size: 18px; font-weight: 800; color: var(--text-dark);">
+            {{ active_category.name if active_category else 'All Medicines & Health Products' }}
+          </h1>
+          <span style="font-size: 12px; color: var(--text-muted);">Showing {{ products|length }} products</span>
+        </div>
+
+        <!-- Sorting Dropdown -->
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px; color: var(--text-muted); font-weight: 500;">Sort By:</span>
+          <select class="form-control" style="width: auto; padding: 6px 12px;" onchange="handleSortChange(this.value)">
+            <option value="popular" {{ 'selected' if selected_sort == 'popular' else '' }}>Popularity</option>
+            <option value="discount" {{ 'selected' if selected_sort == 'discount' else '' }}>Discount (High to Low)</option>
+            <option value="price_low" {{ 'selected' if selected_sort == 'price_low' else '' }}>Price (Low to High)</option>
+            <option value="price_high" {{ 'selected' if selected_sort == 'price_high' else '' }}>Price (High to Low)</option>
+            <option value="newest" {{ 'selected' if selected_sort == 'newest' else '' }}>Newest First</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      {% if products %}
+        <div class="products-catalog-grid">
+          {% for prod in products %}
+            <div class="product-card" style="min-width: 100%; max-width: 100%;">
+              <span class="product-discount-badge">{{ prod.discount_percent }}% OFF</span>
+              {% if prod.prescription_required %}
+                <span class="rx-required-badge">Rx</span>
+              {% endif %}
+
+              <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-img-box">
+                <img src="{{ prod.image_url }}" alt="{{ prod.name }}" loading="lazy" />
+              </a>
+
+              <div class="product-brand">{{ prod.brand_name or 'Generic' }}</div>
+              <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-title" title="{{ prod.name }}">
+                {{ prod.name }}
+              </a>
+              <div class="product-packaging">{{ prod.packaging }}</div>
+
+              <div class="product-rating">
+                <i class="fas fa-star"></i>
+                <span>{{ prod.rating }}</span>
+                <span style="color: #64748b; font-weight: normal; margin-left: 2px;">({{ prod.reviews_count }})</span>
+              </div>
+
+              <div class="product-price-row">
+                <span class="product-mrp">₹{{ "%.2f"|format(prod.mrp) }}</span>
+                <span class="product-price">₹{{ "%.2f"|format(prod.price) }}</span>
+              </div>
+
+              <button type="button" class="add-to-cart-btn" onclick="handleAddToCart({{ prod.id }}, 1, this)">
+                <i class="fas fa-shopping-basket"></i>
+                <span>Add to Cart</span>
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="background: #ffffff; border-radius: var(--radius-md); padding: 50px 20px; text-align: center; border: 1px solid var(--border-color);">
+          <i class="fas fa-search" style="font-size: 40px; color: #cbd5e1; margin-bottom: 16px;"></i>
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">No Products Found</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Try adjusting your filters or browse other popular categories.</p>
+          <a href="{{ url_for('products') }}" class="btn-primary">Browse All Products</a>
+        </div>
+      {% endif %}
+
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function handleSortChange(sortVal) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('sort', sortVal);
+  window.location.href = url.toString();
+}
+
+function toggleRxFilter(checkbox) {
+  const url = new URL(window.location.href);
+  if (checkbox.checked) {
+    url.searchParams.set('rx', '1');
+  } else {
+    url.searchParams.delete('rx');
+  }
+  window.location.href = url.toString();
+}
+</script>
+{% endblock %}
+

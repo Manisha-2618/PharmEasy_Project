@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {{ 'Sign In to PharmEasy' if mode == 'login' else 'Create a PharmEasy Account' }}
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 480px; margin: 40px auto 60px auto;">
+  
+  <div class="modal-card" style="box-shadow: var(--shadow-md); border: 1px solid var(--border-color); padding: 32px;">
+    
+    <!-- Brand Header -->
+    <div style="text-align: center; margin-bottom: 24px;">
+      <div class="brand-logo" style="justify-content: center; font-size: 28px; margin-bottom: 6px;">
+        <i class="fas fa-pills"></i>
+        <span>PharmEasy</span>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted);">
+        {{ 'Access your prescriptions, orders & lab reports' if mode == 'login' else 'Join 32M+ users for genuine medicines & discounts' }}
+      </p>
+    </div>
+
+    <!-- Mode Tabs -->
+    <div style="display: flex; border-bottom: 1.5px solid var(--border-color); margin-bottom: 24px;">
+      <a href="{{ url_for('login') }}" style="flex: 1; text-align: center; padding: 10px 0; font-weight: 700; font-size: 14px; color: {{ '#10847e' if mode == 'login' else '#8897a2' }}; border-bottom: 2px solid {{ '#10847e' if mode == 'login' else 'transparent' }};">
+        Sign In
+      </a>
+      <a href="{{ url_for('register') }}" style="flex: 1; text-align: center; padding: 10px 0; font-weight: 700; font-size: 14px; color: {{ '#10847e' if mode == 'register' else '#8897a2' }}; border-bottom: 2px solid {{ '#10847e' if mode == 'register' else 'transparent' }};">
+        Register
+      </a>
+    </div>
+
+    {% if mode == 'login' %}
+      <!-- Login Form -->
+      <form action="{{ url_for('login', next=request.args.get('next', '')) }}" method="POST">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" name="email" id="login-email" class="form-control" placeholder="name@example.com" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" id="login-password" class="form-control" placeholder="Enter your password" required />
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px; font-size: 15px;">
+          <i class="fas fa-sign-in-alt"></i> Sign In to Account
+        </button>
+      </form>
+
+      <!-- Quick Demo Credentials Fill -->
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px; text-align: center;">
+          ⚡ Quick Demo Login (Click to Auto-fill):
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <button type="button" class="btn-outline" style="font-size: 12px; padding: 8px;" onclick="fillCredentials('user@pharmeasy.com', 'user123')">
+            <i class="fas fa-user"></i> Demo Customer
+          </button>
+          <button type="button" class="btn-outline" style="font-size: 12px; padding: 8px; color: #ff6f61; border-color: #ff6f61;" onclick="fillCredentials('admin@pharmeasy.com', 'admin123')">
+            <i class="fas fa-shield-alt"></i> Demo Admin
+          </button>
+        </div>
+      </div>
+
+    {% else %}
+      <!-- Registration Form -->
+      <form action="{{ url_for('register') }}" method="POST">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="name" class="form-control" placeholder="Enter full name" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" name="email" class="form-control" placeholder="name@example.com" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number" pattern="[0-9]{10}" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" placeholder="Create a secure password" minlength="6" required />
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px; font-size: 15px;">
+          <i class="fas fa-user-plus"></i> Create My Account
+        </button>
+      </form>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 24px; font-size: 12px; color: var(--text-light);">
+      By continuing, you agree to PharmEasy's <a href="#" style="text-decoration: underline; color: #10847e;">Terms & Conditions</a> and <a href="#" style="text-decoration: underline; color: #10847e;">Privacy Policy</a>.
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fillCredentials(email, password) {
+  document.getElementById('login-email').value = email;
+  document.getElementById('login-password').value = password;
+  showToast(`Credentials filled for ${email}`, 'info');
+}
+</script>
+{% endblock %}
+

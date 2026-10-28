@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}PharmEasy: Online Pharmacy & Medical Store in India{% endblock %}</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2310847e'/><path d='M35 50h30M50 35v30' stroke='white' stroke-width='14' stroke-linecap='round'/></svg>">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Announcement Strip -->
+  <div class="top-announcement">
+    <span>⚡ Flat 25% OFF on first medicine order + Extra 5% cashback with code <strong>FIRST25</strong></span>
+    <a href="{{ url_for('offers') }}">View All Offers</a>
+  </div>
+
+  <!-- Global Header -->
+  <header class="site-header">
+    <div class="main-header">
+      <div class="container">
+        <div class="header-wrapper">
+          
+          <!-- Logo & Pincode Picker -->
+          <div class="logo-area">
+            <a href="{{ url_for('home') }}" class="brand-logo" title="PharmEasy Home">
+              <i class="fas fa-pills"></i>
+              <span>PharmEasy</span>
+            </a>
+
+            <!-- Pincode Picker Button -->
+            <div class="pincode-picker" id="pincode-picker-btn" title="Click to change delivery pincode">
+              <i class="fas fa-map-marker-alt"></i>
+              <div class="pincode-text">
+                <span class="pincode-label">Express Delivery to</span>
+                <span class="pincode-value">{{ user_pincode }} {{ user_city }}</span>
+              </div>
+              <i class="fas fa-chevron-down" style="font-size: 10px; color: #8897a2; margin-left: 4px;"></i>
+            </div>
+          </div>
+
+          <!-- Central Smart Search Bar -->
+          <div class="search-bar-wrapper">
+            <form action="{{ url_for('search') }}" method="GET" class="search-form" id="header-search-form">
+              <i class="fas fa-search" style="color: #8897a2; margin-right: 10px;"></i>
+              <input 
+                type="text" 
+                name="q" 
+                id="header-search-input" 
+                class="search-input" 
+                placeholder="Search for Medicines, Health Products, Brands..." 
+                autocomplete="off"
+                value="{{ request.args.get('q', '') }}"
+              />
+              <button type="submit" class="search-btn" title="Search">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </form>
+
+            <!-- Auto-complete Suggestions Dropdown -->
+            <div class="search-suggestions-dropdown" id="search-suggestions"></div>
+          </div>
+
+          <!-- Header Actions -->
+          <div class="header-actions">
+            <!-- Offers Link -->
+            <a href="{{ url_for('offers') }}" class="action-link" title="Explore Coupons & Discounts">
+              <i class="fas fa-percentage"></i>
+              <span>Offers</span>
+            </a>
+
+            <!-- Prescription Upload Shortcut -->
+            <a href="{{ url_for('prescription') }}" class="action-link" title="Upload Doctor Prescription">
+              <i class="fas fa-file-medical"></i>
+              <span>Prescription</span>
+            </a>
+
+            <!-- User Authentication / Profile Dropdown -->
+            {% if current_user %}
+              <div class="user-dropdown-container">
+                <div class="action-link" style="cursor: pointer;">
+                  <i class="fas fa-user-circle"></i>
+                  <span>{{ current_user.name.split()[0] }}</span>
+                  <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+                </div>
+                <div class="user-dropdown-menu">
+                  <div class="user-dropdown-header">
+                    <div class="user-dropdown-name">{{ current_user.name }}</div>
+                    <div class="user-dropdown-email">{{ current_user.email }}</div>
+                  </div>
+                  <a href="{{ url_for('profile', tab='orders') }}"><i class="fas fa-box"></i> My Orders</a>
+                  <a href="{{ url_for('profile', tab='lab_bookings') }}"><i class="fas fa-flask"></i> Lab Bookings</a>
+                  <a href="{{ url_for('profile', tab='prescriptions') }}"><i class="fas fa-file-medical-alt"></i> Uploaded Prescriptions</a>
+                  <a href="{{ url_for('profile', tab='addresses') }}"><i class="fas fa-map-marker-alt"></i> Saved Addresses</a>
+                  {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" style="color: #ff6f61; font-weight: 700;"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>
+                  {% endif %}
+                  <div style="border-top: 1px solid #f1f5f9;"></div>
+                  <a href="{{ url_for('logout') }}" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+                </div>
+              </div>
+            {% else %}
+              <a href="{{ url_for('login') }}" class="action-link" title="Sign In or Create Account">
+                <i class="fas fa-user"></i>
+                <span>Sign In</span>
+              </a>
+            {% endif %}
+
+            <!-- Shopping Cart -->
+            <a href="{{ url_for('cart') }}" class="action-link cart-action-btn" title="View Shopping Cart">
+              <i class="fas fa-shopping-basket"></i>
+              <span>Cart</span>
+              {% if global_cart_count > 0 %}
+                <span class="cart-badge">{{ global_cart_count }}</span>
+              {% else %}
+                <span class="cart-badge" style="display: none;">0</span>
+              {% endif %}
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Categories Bar -->
+    <nav class="nav-categories-bar">
+      <div class="container">
+        <ul class="nav-categories-list">
+          <li class="nav-cat-item {{ 'active' if request.path == '/' else '' }}">
+            <a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a>
+          </li>
+          <li class="nav-cat-item {{ 'active' if request.args.get('category') == 'medicines' else '' }}">
+            <a href="{{ url_for('products', category='medicines') }}">
+              <i class="fas fa-pills"></i> Order Medicines
+              <span class="nav-cat-badge">Flat 20% OFF</span>
+            </a>
+          </li>
+          <li class="nav-cat-item {{ 'active' if request.path == '/lab-tests' else '' }}">
+            <a href="{{ url_for('lab_tests') }}">
+              <i class="fas fa-flask"></i> Book Lab Tests
+              <span class="nav-cat-badge" style="background: #e8f5e9; color: #2e7d32;">Certified Labs</span>
+            </a>
+          </li>
+          <li class="nav-cat-item {{ 'active' if request.path == '/products' and not request.args.get('category') else '' }}">
+            <a href="{{ url_for('products') }}"><i class="fas fa-heartbeat"></i> Healthcare Products</a>
+          </li>
+          <li class="nav-cat-item {{ 'active' if request.args.get('category') == 'diabetic-care' else '' }}">
+            <a href="{{ url_for('products', category='diabetic-care') }}"><i class="fas fa-tint"></i> Diabetic Care</a>
+          </li>
+          <li class="nav-cat-item {{ 'active' if request.args.get('category') == 'ayurvedic-care' else '' }}">
+            <a href="{{ url_for('products', category='ayurvedic-care') }}"><i class="fas fa-leaf"></i> Ayurvedic Care</a>
+          </li>
+          <li class="nav-cat-item {{ 'active' if request.path == '/prescription' else '' }}">
+            <a href="{{ url_for('prescription') }}"><i class="fas fa-file-upload"></i> Upload Prescription</a>
+          </li>
+          <li class="nav-cat-item {{ 'active' if request.path == '/offers' else '' }}">
+            <a href="{{ url_for('offers') }}"><i class="fas fa-tags"></i> Value Deals</a>
+          </li>
+          {% if current_user and current_user.role == 'admin' %}
+            <li class="nav-cat-item" style="margin-left: auto;">
+              <a href="{{ url_for('admin_dashboard') }}" style="color: #ff6f61;"><i class="fas fa-shield-alt"></i> Admin Panel</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="container" style="margin-top: 16px;">
+        {% for category, message in messages %}
+          <div class="toast toast-{{ 'success' if category == 'success' else ('error' if category == 'error' else 'warning') }}" style="position: static; margin-bottom: 10px; max-width: 100%;">
+            <i class="fas {{ 'fa-check-circle' if category == 'success' else ('fa-exclamation-circle' if category == 'error' else 'fa-info-circle') }}" style="color: {{ '#10847e' if category == 'success' else ('#ef4444' if category == 'error' else '#f59e0b') }}; font-size: 18px;"></i>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Complete Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-grid">
+        
+        <!-- Col 1: About PharmEasy -->
+        <div class="footer-col footer-brand">
+          <div class="brand-logo" style="color: #ffffff;">
+            <i class="fas fa-pills" style="color: #10847e;"></i>
+            <span>PharmEasy</span>
+          </div>
+          <p>
+            India's most trusted online pharmacy and healthcare platform. Simplifing access to 100% genuine medicines, reliable diagnostic lab tests, and doctor-approved healthcare products with fast doorstep delivery across 25,000+ pin codes.
+          </p>
+          <div class="footer-social-links">
+            <a href="https://facebook.com" target="_blank" class="social-btn" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://instagram.com" target="_blank" class="social-btn" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://twitter.com" target="_blank" class="social-btn" title="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://youtube.com" target="_blank" class="social-btn" title="YouTube"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+
+        <!-- Col 2: Services -->
+        <div class="footer-col">
+          <h4>Our Healthcare Services</h4>
+          <ul>
+            <li><a href="{{ url_for('products', category='medicines') }}">Order Prescription Medicines</a></li>
+            <li><a href="{{ url_for('lab_tests') }}">Full Body Diagnostic Tests</a></li>
+            <li><a href="{{ url_for('prescription') }}">Upload Doctor Prescription</a></li>
+            <li><a href="{{ url_for('products', category='healthcare-devices') }}">Healthcare Devices</a></li>
+            <li><a href="{{ url_for('products', category='ayurvedic-care') }}">Ayurvedic & Herbal Care</a></li>
+            <li><a href="{{ url_for('offers') }}">Offers & Discount Coupons</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Company & Support -->
+        <div class="footer-col">
+          <h4>Company & Policies</h4>
+          <ul>
+            <li><a href="#about-us">About Us</a></li>
+            <li><a href="#careers">Careers & Life</a></li>
+            <li><a href="#editorial">Editorial & Medical Policy</a></li>
+            <li><a href="#privacy">Privacy & Security Policy</a></li>
+            <li><a href="#terms">Terms and Conditions</a></li>
+            <li><a href="#customer-support">Customer Support 24x7</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: App Download & Certifications -->
+        <div class="footer-col">
+          <h4>Download the PharmEasy App</h4>
+          <p style="color: #a0b2be; font-size: 12px; margin-bottom: 12px;">Get an extra 5% off on app orders and enjoy seamless refill reminders.</p>
+          <div class="footer-app-badges">
+            <a href="#" class="app-store-btn">
+              <i class="fab fa-google-play"></i>
+              <div>
+                <div style="font-size: 9px; text-transform: uppercase;">Get it on</div>
+                <div style="font-weight: 700;">Google Play Store</div>
+              </div>
+            </a>
+            <a href="#" class="app-store-btn">
+              <i class="fab fa-apple"></i>
+              <div>
+                <div style="font-size: 9px; text-transform: uppercase;">Download on the</div>
+                <div style="font-weight: 700;">Apple App Store</div>
+              </div>
+            </a>
+          </div>
+          <div style="margin-top: 14px; font-size: 11px; color: #7b8e9b;">
+            <i class="fas fa-shield-alt" style="color: #10847e;"></i> 100% Secure 256-Bit SSL Encrypted
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Bottom Bar -->
+      <div class="footer-bottom-bar">
+        <div class="payment-partners-icons">
+          <span style="font-size: 12px; color: #a0b2be; margin-right: 6px;">Secure Payment Partners:</span>
+          <i class="fab fa-cc-visa" title="Visa"></i>
+          <i class="fab fa-cc-mastercard" title="Mastercard"></i>
+          <i class="fab fa-google-pay" title="Google Pay"></i>
+          <i class="fas fa-money-check-alt" title="Net Banking"></i>
+          <i class="fas fa-wallet" title="UPI & Wallets"></i>
+          <i class="fas fa-hand-holding-usd" title="Cash on Delivery"></i>
+        </div>
+
+        <div class="copyright-text">
+          &copy; 2026 PharmEasy Clone Project. All rights reserved. Database connected: <strong>{{ db_engine.upper() }}</strong>.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Delivery Pincode Modal -->
+  <div class="modal-backdrop" id="pincode-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-map-marker-alt" style="color: #10847e; margin-right: 8px;"></i> Choose Your Delivery Location</h3>
+        <button type="button" class="modal-close-btn" id="pincode-modal-close">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Enter your 6-digit PIN code to check medicine delivery timelines and diagnostic sample collection slots.
+      </p>
+      <form id="pincode-form">
+        <div class="form-group">
+          <input 
+            type="text" 
+            id="modal-pincode-input" 
+            class="form-control" 
+            placeholder="Enter 6-digit Pincode (e.g. 110001)" 
+            maxlength="6"
+            value="{{ user_pincode }}"
+            required 
+          />
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%;">
+          <i class="fas fa-check"></i> Check & Set Location
+        </button>
+      </form>
+
+      <div style="margin-top: 18px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px;">Popular Delivery Cities:</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <button type="button" class="quick-pincode-chip seo-link-tag" data-pin="110001" data-city="New Delhi" style="border: none; cursor: pointer;">New Delhi (110001)</button>
+          <button type="button" class="quick-pincode-chip seo-link-tag" data-pin="400001" data-city="Mumbai" style="border: none; cursor: pointer;">Mumbai (400001)</button>
+          <button type="button" class="quick-pincode-chip seo-link-tag" data-pin="560001" data-city="Bengaluru" style="border: none; cursor: pointer;">Bengaluru (560001)</button>
+          <button type="button" class="quick-pincode-chip seo-link-tag" data-pin="700001" data-city="Kolkata" style="border: none; cursor: pointer;">Kolkata (700001)</button>
+          <button type="button" class="quick-pincode-chip seo-link-tag" data-pin="600001" data-city="Chennai" style="border: none; cursor: pointer;">Chennai (600001)</button>
+          <button type="button" class="quick-pincode-chip seo-link-tag" data-pin="500001" data-city="Hyderabad" style="border: none; cursor: pointer;">Hyderabad (500001)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/carousel.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

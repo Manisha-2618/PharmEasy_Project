@@ -1,0 +1,600 @@
+{% extends 'base.html' %}
+
+{% block title %}PharmEasy Clone: India's Leading Online Pharmacy & Healthcare Platform{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- 1. Hero Promotional Banner Carousel -->
+  <section class="section-wrapper" style="margin-top: 18px;">
+    <div class="hero-carousel-container">
+      <button type="button" class="carousel-nav-btn prev" id="hero-prev-btn" aria-label="Previous Slide">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="hero-slider" id="hero-slider">
+        {% for banner in banners %}
+          <div class="hero-slide" style="background-image: url('{{ banner.image_url }}');">
+            <div class="hero-slide-overlay" style="background: {{ banner.bg_gradient }}; opacity: 0.92;"></div>
+            <div class="hero-slide-content">
+              <span class="hero-tag">{{ banner.tag }}</span>
+              <h1 class="hero-title">{{ banner.title }}</h1>
+              <p class="hero-subtitle">{{ banner.subtitle }}</p>
+              <a href="{{ banner.target_url }}" class="hero-btn">
+                <span>Explore & Save</span>
+                <i class="fas fa-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="carousel-nav-btn next" id="hero-next-btn" aria-label="Next Slide">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <div class="hero-dots-container" id="hero-dots"></div>
+    </div>
+  </section>
+
+  <!-- 2. Healthcare Service Shortcuts (The Big 4 Core Tiles) -->
+  <section class="section-wrapper">
+    <div class="service-shortcuts-grid">
+      
+      <a href="{{ url_for('products', category='medicines') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Order Medicines</h3>
+          <span class="service-tile-tag">Save Flat 20%</span>
+        </div>
+        <div class="service-tile-icon">
+          <i class="fas fa-pills"></i>
+        </div>
+      </a>
+
+      <a href="{{ url_for('lab_tests') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Book Lab Tests</h3>
+          <span class="service-tile-tag" style="background: #e8f5e9; color: #2e7d32;">From ₹199</span>
+        </div>
+        <div class="service-tile-icon" style="background: #e8f5e9; color: #2e7d32;">
+          <i class="fas fa-flask"></i>
+        </div>
+      </a>
+
+      <a href="{{ url_for('products') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Healthcare Products</h3>
+          <span class="service-tile-tag" style="background: #e0f2fe; color: #0284c7;">Up to 60% OFF</span>
+        </div>
+        <div class="service-tile-icon" style="background: #e0f2fe; color: #0284c7;">
+          <i class="fas fa-heartbeat"></i>
+        </div>
+      </a>
+
+      <a href="{{ url_for('prescription') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Upload Prescription</h3>
+          <span class="service-tile-tag" style="background: #fef3c7; color: #d97706;">Instant Delivery</span>
+        </div>
+        <div class="service-tile-icon" style="background: #fef3c7; color: #d97706;">
+          <i class="fas fa-file-medical-alt"></i>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- 3. Prescription Upload Banner & 3-Step Guide -->
+  <section class="section-wrapper">
+    <div class="rx-banner-section">
+      <div class="rx-content">
+        <h2>Order Quickly with a Valid Doctor's Prescription</h2>
+        <p>Save time and let our certified pharmacists find and dispense your exact prescribed medications.</p>
+        <div class="rx-steps-list">
+          <div class="rx-step-item">
+            <span class="rx-step-num">1</span>
+            <span>Upload clear photo or PDF</span>
+          </div>
+          <div class="rx-step-item">
+            <span class="rx-step-num">2</span>
+            <span>Pharmacist verifies & dispenses</span>
+          </div>
+          <div class="rx-step-item">
+            <span class="rx-step-num">3</span>
+            <span>Doorstep delivery in 24-48 hrs</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <a href="{{ url_for('prescription') }}" class="rx-upload-cta">
+          <i class="fas fa-upload"></i>
+          <span>Upload Prescription Now</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Shop by Category Grid (Healthcare Essentials) -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Shop by Category</h2>
+        <span class="section-subtitle">Browse daily healthcare & wellness essentials</span>
+      </div>
+      <a href="{{ url_for('products') }}" class="view-all-link">
+        View All <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="categories-circles-grid">
+      {% for cat in categories %}
+        <a href="{{ url_for('products', category=cat.slug) }}" class="category-circle-card" title="{{ cat.name }}">
+          <div class="category-img-box">
+            <img src="{{ cat.image_url }}" alt="{{ cat.name }}" loading="lazy" />
+          </div>
+          <span class="category-circle-name">{{ cat.name }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- 5. Deals of the Day (Flash Sale) -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Deals of the Day</h2>
+        <div class="deals-timer-badge">
+          <i class="fas fa-clock"></i>
+          <span id="deals-countdown">Ends in 05h : 42m : 19s</span>
+        </div>
+      </div>
+      <a href="{{ url_for('products', sort='discount') }}" class="view-all-link">
+        View All Deals <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="carousel-scroll-container products-carousel-wrapper">
+      <button type="button" class="carousel-nav-btn prev track-nav-prev" aria-label="Previous">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="products-carousel-track">
+        {% for prod in deals %}
+          <div class="product-card">
+            <span class="product-discount-badge">{{ prod.discount_percent }}% OFF</span>
+            {% if prod.prescription_required %}
+              <span class="rx-required-badge">Rx</span>
+            {% endif %}
+
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-img-box">
+              <img src="{{ prod.image_url }}" alt="{{ prod.name }}" loading="lazy" />
+            </a>
+
+            <div class="product-brand">{{ prod.brand_name or 'Generic' }}</div>
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-title" title="{{ prod.name }}">
+              {{ prod.name }}
+            </a>
+            <div class="product-packaging">{{ prod.packaging }}</div>
+
+            <div class="product-rating">
+              <i class="fas fa-star"></i>
+              <span>{{ prod.rating }}</span>
+              <span style="color: #64748b; font-weight: normal; margin-left: 2px;">({{ prod.reviews_count }})</span>
+            </div>
+
+            <div class="product-price-row">
+              <span class="product-mrp">₹{{ "%.2f"|format(prod.mrp) }}</span>
+              <span class="product-price">₹{{ "%.2f"|format(prod.price) }}</span>
+            </div>
+
+            <button type="button" class="add-to-cart-btn" onclick="handleAddToCart({{ prod.id }}, 1, this)">
+              <i class="fas fa-shopping-basket"></i>
+              <span>Add to Cart</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="carousel-nav-btn next track-nav-next" aria-label="Next">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- 6. Trending Products (Bestsellers) -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Trending Products</h2>
+        <span class="section-subtitle">Most frequently purchased healthcare essentials</span>
+      </div>
+      <a href="{{ url_for('products', sort='popular') }}" class="view-all-link">
+        View All <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="carousel-scroll-container products-carousel-wrapper">
+      <button type="button" class="carousel-nav-btn prev track-nav-prev" aria-label="Previous">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="products-carousel-track">
+        {% for prod in trending %}
+          <div class="product-card">
+            <span class="product-discount-badge">{{ prod.discount_percent }}% OFF</span>
+            {% if prod.prescription_required %}
+              <span class="rx-required-badge">Rx</span>
+            {% endif %}
+
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-img-box">
+              <img src="{{ prod.image_url }}" alt="{{ prod.name }}" loading="lazy" />
+            </a>
+
+            <div class="product-brand">{{ prod.brand_name or 'Generic' }}</div>
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-title" title="{{ prod.name }}">
+              {{ prod.name }}
+            </a>
+            <div class="product-packaging">{{ prod.packaging }}</div>
+
+            <div class="product-rating">
+              <i class="fas fa-star"></i>
+              <span>{{ prod.rating }}</span>
+              <span style="color: #64748b; font-weight: normal; margin-left: 2px;">({{ prod.reviews_count }})</span>
+            </div>
+
+            <div class="product-price-row">
+              <span class="product-mrp">₹{{ "%.2f"|format(prod.mrp) }}</span>
+              <span class="product-price">₹{{ "%.2f"|format(prod.price) }}</span>
+            </div>
+
+            <button type="button" class="add-to-cart-btn" onclick="handleAddToCart({{ prod.id }}, 1, this)">
+              <i class="fas fa-shopping-basket"></i>
+              <span>Add to Cart</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="carousel-nav-btn next track-nav-next" aria-label="Next">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- 7. Frequently Booked Lab Tests -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Frequently Booked Lab Tests</h2>
+        <span class="section-subtitle">Certified NABL diagnostic tests with Free Home Sample Collection</span>
+      </div>
+      <a href="{{ url_for('lab_tests') }}" class="view-all-link">
+        View All Tests <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="lab-tests-grid">
+      {% for test in lab_tests[:4] %}
+        <div class="lab-test-card">
+          <div class="lab-tag-row">
+            <span class="lab-certified-badge"><i class="fas fa-check-circle"></i> 100% Certified Lab</span>
+            <span class="lab-test-count">{{ test.test_count }} Tests Included</span>
+          </div>
+
+          <h3 class="lab-test-title">{{ test.name }}</h3>
+
+          <div class="lab-fasting-info">
+            <i class="fas fa-info-circle"></i>
+            <span>{{ test.fasting_required }}</span>
+          </div>
+
+          <div class="lab-tat-info">
+            <i class="far fa-clock" style="margin-right: 4px;"></i> {{ test.turnaround_time }}
+          </div>
+
+          <div class="lab-price-row">
+            <div>
+              <span style="font-size: 11px; color: var(--text-light); text-decoration: line-through;">₹{{ "%.2f"|format(test.mrp) }}</span>
+              <div style="font-size: 18px; font-weight: 800; color: var(--primary);">₹{{ "%.2f"|format(test.price) }}</div>
+            </div>
+            <a href="{{ url_for('lab_tests') }}?book={{ test.id }}" class="lab-book-btn">
+              <i class="fas fa-calendar-check" style="margin-right: 4px;"></i> Book Now
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- 8. Featured Brands Showcase -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Featured Brands</h2>
+        <span class="section-subtitle">Trusted by healthcare practitioners & millions of families</span>
+      </div>
+      <a href="{{ url_for('products') }}" class="view-all-link">
+        All Brands <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="featured-brands-grid">
+      {% for brand in brands %}
+        <a href="{{ url_for('products', brand=brand.slug) }}" class="brand-showcase-card">
+          <img src="{{ brand.logo_url }}" alt="{{ brand.name }}" class="brand-logo-img" loading="lazy" />
+          <h4 class="brand-showcase-name">{{ brand.name }}</h4>
+          <p class="brand-showcase-desc">{{ brand.description[:35] }}...</p>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- 9. New Launches Carousel -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">New Launches</h2>
+        <span class="section-subtitle">Newly added formulations, health monitors & OTC items</span>
+      </div>
+      <a href="{{ url_for('products', sort='newest') }}" class="view-all-link">
+        Explore New <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="carousel-scroll-container products-carousel-wrapper">
+      <button type="button" class="carousel-nav-btn prev track-nav-prev" aria-label="Previous">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="products-carousel-track">
+        {% for prod in new_launches %}
+          <div class="product-card">
+            <span class="product-discount-badge">{{ prod.discount_percent }}% OFF</span>
+            {% if prod.prescription_required %}
+              <span class="rx-required-badge">Rx</span>
+            {% endif %}
+
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-img-box">
+              <img src="{{ prod.image_url }}" alt="{{ prod.name }}" loading="lazy" />
+            </a>
+
+            <div class="product-brand">{{ prod.brand_name or 'Generic' }}</div>
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-title" title="{{ prod.name }}">
+              {{ prod.name }}
+            </a>
+            <div class="product-packaging">{{ prod.packaging }}</div>
+
+            <div class="product-rating">
+              <i class="fas fa-star"></i>
+              <span>{{ prod.rating }}</span>
+              <span style="color: #64748b; font-weight: normal; margin-left: 2px;">({{ prod.reviews_count }})</span>
+            </div>
+
+            <div class="product-price-row">
+              <span class="product-mrp">₹{{ "%.2f"|format(prod.mrp) }}</span>
+              <span class="product-price">₹{{ "%.2f"|format(prod.price) }}</span>
+            </div>
+
+            <button type="button" class="add-to-cart-btn" onclick="handleAddToCart({{ prod.id }}, 1, this)">
+              <i class="fas fa-shopping-basket"></i>
+              <span>Add to Cart</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="carousel-nav-btn next track-nav-next" aria-label="Next">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- 10. In the Spotlight Products -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">In the Spotlight</h2>
+        <span class="section-subtitle">Doctor recommended medical devices & daily wellness</span>
+      </div>
+      <a href="{{ url_for('products') }}" class="view-all-link">
+        View All <i class="fas fa-chevron-right"></i>
+      </a>
+    </div>
+
+    <div class="carousel-scroll-container products-carousel-wrapper">
+      <button type="button" class="carousel-nav-btn prev track-nav-prev" aria-label="Previous">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="products-carousel-track">
+        {% for prod in spotlight %}
+          <div class="product-card">
+            <span class="product-discount-badge">{{ prod.discount_percent }}% OFF</span>
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-img-box">
+              <img src="{{ prod.image_url }}" alt="{{ prod.name }}" loading="lazy" />
+            </a>
+
+            <div class="product-brand">{{ prod.brand_name or 'Generic' }}</div>
+            <a href="{{ url_for('product_detail', slug=prod.slug) }}" class="product-title" title="{{ prod.name }}">
+              {{ prod.name }}
+            </a>
+            <div class="product-packaging">{{ prod.packaging }}</div>
+
+            <div class="product-rating">
+              <i class="fas fa-star"></i>
+              <span>{{ prod.rating }}</span>
+            </div>
+
+            <div class="product-price-row">
+              <span class="product-mrp">₹{{ "%.2f"|format(prod.mrp) }}</span>
+              <span class="product-price">₹{{ "%.2f"|format(prod.price) }}</span>
+            </div>
+
+            <button type="button" class="add-to-cart-btn" onclick="handleAddToCart({{ prod.id }}, 1, this)">
+              <i class="fas fa-shopping-basket"></i>
+              <span>Add to Cart</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="carousel-nav-btn next track-nav-next" aria-label="Next">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- 11. Wellness Essentials / Shop by Health Concern -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Shop by Health Concern</h2>
+        <span class="section-subtitle">Targeted healthcare packages and specialized treatments</span>
+      </div>
+    </div>
+
+    <div class="service-shortcuts-grid">
+      <a href="{{ url_for('products', category='diabetic-care') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Diabetes Care</h3>
+          <span class="service-tile-tag">Monitors & Nutrition</span>
+        </div>
+        <div class="service-tile-icon" style="background: #eef2ff; color: #4f46e5;">
+          <i class="fas fa-tint"></i>
+        </div>
+      </a>
+
+      <a href="{{ url_for('products', category='healthcare-devices') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Cardiac & BP Care</h3>
+          <span class="service-tile-tag">Smart Monitoring</span>
+        </div>
+        <div class="service-tile-icon" style="background: #fff1f2; color: #e11d48;">
+          <i class="fas fa-heart"></i>
+        </div>
+      </a>
+
+      <a href="{{ url_for('products', category='ayurvedic-care') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Stomach & Digestion</h3>
+          <span class="service-tile-tag">Herbal Relief</span>
+        </div>
+        <div class="service-tile-icon" style="background: #f0fdf4; color: #16a34a;">
+          <i class="fas fa-spa"></i>
+        </div>
+      </a>
+
+      <a href="{{ url_for('products', category='elderly-care') }}" class="service-tile-card">
+        <div class="service-tile-info">
+          <h3>Joint Pain & Bones</h3>
+          <span class="service-tile-tag">Calcium & Gels</span>
+        </div>
+        <div class="service-tile-icon" style="background: #fffbeb; color: #b45309;">
+          <i class="fas fa-bone"></i>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 12. Health Articles & Medical Insights -->
+  <section class="section-wrapper">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <h2 class="section-title">Health Articles & Insights</h2>
+        <span class="section-subtitle">Medically reviewed guides written by healthcare specialists</span>
+      </div>
+    </div>
+
+    <div class="articles-grid">
+      {% for article in articles %}
+        <article class="article-card">
+          <img src="{{ article.image_url }}" alt="{{ article.title }}" class="article-img" loading="lazy" />
+          <div class="article-body">
+            <div class="article-meta">
+              <span class="article-category">{{ article.category }}</span>
+              <span><i class="far fa-clock"></i> {{ article.read_time }}</span>
+            </div>
+            <h3 class="article-title">{{ article.title }}</h3>
+            <p class="article-excerpt">{{ article.excerpt }}</p>
+            <div class="article-doctor">
+              <i class="fas fa-user-md"></i>
+              <span>{{ article.doctor_reviewed }}</span>
+            </div>
+            <a href="{{ url_for('article_detail', slug=article.slug) }}" class="btn-outline" style="margin-top: 14px; text-align: center; font-size: 12px; padding: 6px 12px;">
+              Read Full Article <i class="fas fa-arrow-right" style="margin-left: 4px;"></i>
+            </a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- 13. Why Choose PharmEasy / Trust Statistics -->
+  <section class="trust-metrics-section">
+    <div class="trust-metrics-grid">
+      <div class="trust-metric-item">
+        <div class="trust-icon-box">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="trust-stat">32 Million+</div>
+        <div class="trust-label">Happy Registered Customers</div>
+      </div>
+
+      <div class="trust-metric-item">
+        <div class="trust-icon-box">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="trust-stat">100% Genuine</div>
+        <div class="trust-label">Medicines Direct from Manufacturers</div>
+      </div>
+
+      <div class="trust-metric-item">
+        <div class="trust-icon-box">
+          <i class="fas fa-shipping-fast"></i>
+        </div>
+        <div class="trust-stat">25,000+</div>
+        <div class="trust-label">Pin Codes Served Across India</div>
+      </div>
+
+      <div class="trust-metric-item">
+        <div class="trust-icon-box">
+          <i class="fas fa-microscope"></i>
+        </div>
+        <div class="trust-stat">NABL Certified</div>
+        <div class="trust-label">Automated Diagnostic Partner Labs</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14. Popular Medicine Links & Directory (SEO Section) -->
+  <section class="seo-directory-section">
+    <h4>Top Searched Medicines & Formulations:</h4>
+    <div class="seo-links-cloud">
+      <a href="{{ url_for('search', q='Paracetamol') }}" class="seo-link-tag">Paracetamol 650mg</a>
+      <a href="{{ url_for('search', q='Pantoprazole') }}" class="seo-link-tag">Pantoprazole 40mg</a>
+      <a href="{{ url_for('search', q='Azithromycin') }}" class="seo-link-tag">Azithromycin 500mg</a>
+      <a href="{{ url_for('search', q='Calcium') }}" class="seo-link-tag">Shelcal 500 Calcium</a>
+      <a href="{{ url_for('search', q='Vitamin C') }}" class="seo-link-tag">Vitamin C Effervescent</a>
+      <a href="{{ url_for('search', q='Evion') }}" class="seo-link-tag">Evion 400 Vitamin E</a>
+      <a href="{{ url_for('search', q='Metformin') }}" class="seo-link-tag">Metformin Glycomet</a>
+      <a href="{{ url_for('search', q='Telmisartan') }}" class="seo-link-tag">Telmisartan BP Tablet</a>
+      <a href="{{ url_for('search', q='Volini') }}" class="seo-link-tag">Volini Pain Relief Gel</a>
+      <a href="{{ url_for('search', q='Horlicks') }}" class="seo-link-tag">Horlicks Nutrition Drink</a>
+    </div>
+
+    <h4>Popular Diagnostic Lab Test Categories:</h4>
+    <div class="seo-links-cloud">
+      <a href="{{ url_for('lab_tests', category='Full Body Checkup') }}" class="seo-link-tag">Full Body Health Checkup</a>
+      <a href="{{ url_for('lab_tests', category='Thyroid') }}" class="seo-link-tag">Thyroid Profile (T3, T4, TSH)</a>
+      <a href="{{ url_for('lab_tests', category='Diabetes') }}" class="seo-link-tag">HbA1c Glycated Hemoglobin</a>
+      <a href="{{ url_for('lab_tests', category='Cardiac') }}" class="seo-link-tag">Lipid Profile Cholesterol</a>
+      <a href="{{ url_for('lab_tests', category='Blood Studies') }}" class="seo-link-tag">Complete Blood Count (CBC)</a>
+      <a href="{{ url_for('lab_tests', category='Vitamins') }}" class="seo-link-tag">Vitamin D & B12 Health Combo</a>
+      <a href="{{ url_for('lab_tests', category='Liver Care') }}" class="seo-link-tag">Liver Function Test (LFT)</a>
+      <a href="{{ url_for('lab_tests', category='Kidney Care') }}" class="seo-link-tag">Kidney Function Test (KFT)</a>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
+

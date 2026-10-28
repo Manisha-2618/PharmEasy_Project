@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Discount Coupons & Wallet Offers | Save on Medicines - PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 24px; margin-bottom: 60px;">
+  
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">Offers & Coupons</span>
+  </nav>
+
+  <div style="background: linear-gradient(135deg, #ff6f61 0%, #d83f31 100%); border-radius: var(--radius-lg); padding: 36px 40px; color: #ffffff; margin-bottom: 30px; box-shadow: var(--shadow-md);">
+    <div style="max-width: 600px;">
+      <span style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase;">Maximum Savings Guaranteed</span>
+      <h1 style="font-size: 28px; font-weight: 800; margin: 10px 0 8px 0;">PharmEasy Exclusive Coupons & Wallet Offers</h1>
+      <p style="font-size: 14px; opacity: 0.95;">Save up to ₹250 on prescription medicines, diagnostic checkups, and wellness products with verified coupon codes.</p>
+    </div>
+  </div>
+
+  <!-- Category Filter Pills -->
+  <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+    {% for cat in ['All', 'Medicines', 'Healthcare', 'Lab Tests'] %}
+      <a href="{{ url_for('offers', category=cat) }}" class="seo-link-tag" style="font-size: 13px; padding: 8px 18px; border-radius: 20px; {{ 'background: #10847e; color: #fff;' if selected_category == cat else '' }}">
+        {{ cat }} Offers
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Coupons Grid -->
+  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+    {% for coupon in coupons %}
+      <div style="background: #ffffff; border: 1.5px dashed var(--border-color); border-radius: var(--radius-md); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); transition: var(--transition);">
+        
+        <div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <span style="background: #e8f7f5; color: #10847e; font-weight: 800; font-size: 16px; padding: 6px 14px; border-radius: 6px; letter-spacing: 1px; border: 1px dashed #10847e;">
+              {{ coupon.code }}
+            </span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--accent-orange); background: #fff0eb; padding: 3px 8px; border-radius: 4px;">
+              {{ coupon.category }}
+            </span>
+          </div>
+
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">{{ coupon.title }}</h3>
+          <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4; margin-bottom: 16px;">{{ coupon.description }}</p>
+        </div>
+
+        <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 11px; color: var(--text-light);">
+            <div>Min Order: ₹{{ "%.0f"|format(coupon.min_order_value) }}</div>
+            <div>Valid till: {{ coupon.expires_at or 'Dec 31, 2027' }}</div>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn-outline" style="font-size: 12px; padding: 6px 12px;" onclick="copyCouponCode('{{ coupon.code }}')">
+              <i class="far fa-copy"></i> Copy Code
+            </button>
+            <a href="{{ url_for('cart', coupon=coupon.code) }}" class="btn-primary" style="font-size: 12px; padding: 6px 14px;">
+              Apply Now
+            </a>
+          </div>
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyCouponCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    showToast(`Coupon code ${code} copied to clipboard!`, 'success');
+  }).catch(() => {
+    showToast(`Code: ${code}`, 'info');
+  });
+}
+</script>
+{% endblock %}
+

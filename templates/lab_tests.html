@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Diagnostic Lab Tests & Full Body Checkups Online | PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 24px; margin-bottom: 60px;">
+  
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">Diagnostic Lab Tests</span>
+  </nav>
+
+  <!-- Hero Header for Lab Tests -->
+  <div style="background: linear-gradient(135deg, #0e706b 0%, #06403d 100%); border-radius: var(--radius-lg); padding: 36px 40px; color: #ffffff; margin-bottom: 30px; box-shadow: var(--shadow-md);">
+    <div style="max-width: 600px;">
+      <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase;">100% NABL & CAP Certified Labs</span>
+      <h1 style="font-size: 28px; font-weight: 800; margin: 10px 0 8px 0;">Diagnostic Lab Tests with Free Home Sample Collection</h1>
+      <p style="font-size: 14px; opacity: 0.9;">Accurate automated lab reports reviewed by specialist pathologists within 12 to 24 hours.</p>
+    </div>
+  </div>
+
+  <!-- Category Filter Tabs -->
+  <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 24px;">
+    <a href="{{ url_for('lab_tests') }}" class="seo-link-tag" style="font-size: 13px; padding: 8px 16px; border-radius: 20px; {{ 'background: #10847e; color: #fff;' if selected_category == 'all' else '' }}">
+      All Diagnostic Packages
+    </a>
+    {% for cat in categories %}
+      <a href="{{ url_for('lab_tests', category=cat) }}" class="seo-link-tag" style="font-size: 13px; padding: 8px 16px; border-radius: 20px; {{ 'background: #10847e; color: #fff;' if selected_category == cat else '' }}">
+        {{ cat }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- Lab Tests Catalog Grid -->
+  <div class="lab-tests-grid" style="grid-template-columns: repeat(3, 1fr);">
+    {% for test in lab_tests %}
+      <div class="lab-test-card">
+        <div class="lab-tag-row">
+          <span class="lab-certified-badge"><i class="fas fa-check-circle"></i> NABL Certified</span>
+          <span class="lab-test-count" style="background: #f1f5f9; padding: 2px 8px; border-radius: 10px;">{{ test.test_count }} Tests</span>
+        </div>
+
+        <h3 class="lab-test-title" style="font-size: 17px; margin-bottom: 8px;">{{ test.name }}</h3>
+        
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px; height: 34px; overflow: hidden; text-overflow: ellipsis;">
+          {{ test.description }}
+        </p>
+
+        <div class="lab-fasting-info">
+          <i class="fas fa-utensils"></i>
+          <span>{{ test.fasting_required }}</span>
+        </div>
+
+        <div class="lab-tat-info">
+          <i class="far fa-clock"></i>
+          <span>{{ test.turnaround_time }}</span>
+        </div>
+
+        {% if test.included_tests %}
+          <div style="margin-bottom: 16px; font-size: 12px; color: var(--text-muted); background: #f8fafc; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+            <div style="font-weight: 700; color: var(--text-dark); margin-bottom: 2px;">Includes:</div>
+            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ test.included_tests }}</div>
+          </div>
+        {% endif %}
+
+        <div class="lab-price-row">
+          <div>
+            <span style="font-size: 12px; color: var(--text-light); text-decoration: line-through;">₹{{ "%.2f"|format(test.mrp) }}</span>
+            <span style="font-size: 11px; font-weight: 800; color: var(--accent-orange); margin-left: 4px;">{{ test.discount_percent }}% OFF</span>
+            <div style="font-size: 20px; font-weight: 800; color: var(--primary);">₹{{ "%.2f"|format(test.price) }}</div>
+          </div>
+          <button type="button" class="btn-primary" style="padding: 10px 20px; font-size: 13px;" onclick="openBookingModal({{ test.id }}, '{{ test.name|replace("'", "\\'") }}', {{ test.price }})">
+            <i class="fas fa-calendar-alt"></i> Book Now
+          </button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Lab Test Booking Modal -->
+  <div class="modal-backdrop" id="lab-booking-modal">
+    <div class="modal-card" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-calendar-check" style="color: #10847e; margin-right: 8px;"></i> Schedule Home Sample Collection</h3>
+        <button type="button" class="modal-close-btn" onclick="closeBookingModal()">&times;</button>
+      </div>
+
+      <div style="background: #e8f7f5; padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 700; font-size: 13px; color: #10847e;" id="modal-test-name">Comprehensive Checkup</div>
+        <div style="font-weight: 800; font-size: 15px; color: #10847e;" id="modal-test-price">₹899.00</div>
+      </div>
+
+      <form id="lab-booking-form" onsubmit="handleLabBookingSubmit(event)">
+        <input type="hidden" id="booking-test-id" />
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">Patient Name *</label>
+            <input type="text" id="patient-name" class="form-control" placeholder="Patient's Full Name" value="{{ current_user.name if current_user else '' }}" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number *</label>
+            <input type="tel" id="patient-phone" class="form-control" placeholder="10-digit number" value="{{ current_user.phone if current_user else '' }}" pattern="[0-9]{10}" required />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">Patient Age *</label>
+            <input type="number" id="patient-age" class="form-control" placeholder="Years" min="1" max="110" value="35" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Gender *</label>
+            <select id="patient-gender" class="form-control">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label">Preferred Date *</label>
+            <input type="date" id="booking-date" class="form-control" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time Slot *</label>
+            <select id="booking-slot" class="form-control">
+              <option value="06:30 AM - 07:30 AM (Fasting Slot)">06:30 AM - 07:30 AM (Fasting Slot)</option>
+              <option value="07:30 AM - 08:30 AM (Fasting Slot)" selected>07:30 AM - 08:30 AM (Fasting Slot)</option>
+              <option value="08:30 AM - 09:30 AM">08:30 AM - 09:30 AM</option>
+              <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Sample Collection Address *</label>
+          <input type="text" id="booking-address" class="form-control" placeholder="Complete home address with flat/house number" required />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Pincode *</label>
+          <input type="text" id="booking-pincode" class="form-control" value="{{ user_pincode }}" maxlength="6" required />
+        </div>
+
+        <button type="submit" id="booking-submit-btn" class="btn-primary" style="width: 100%; margin-top: 10px; font-size: 15px; padding: 12px 0;">
+          <i class="fas fa-check"></i> Confirm Free Home Sample Booking
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Pre-fill tomorrow's date
+document.addEventListener('DOMContentLoaded', () => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dateInput = document.getElementById('booking-date');
+  if (dateInput) {
+    dateInput.value = tomorrow.toISOString().split('T')[0];
+    dateInput.min = tomorrow.toISOString().split('T')[0];
+  }
+
+  // Check URL query param book
+  const urlParams = new URLSearchParams(window.location.search);
+  const bookId = urlParams.get('book');
+  if (bookId) {
+    const btn = document.querySelector(`button[onclick*="openBookingModal(${bookId}"]`);
+    if (btn) btn.click();
+  }
+});
+
+function openBookingModal(testId, testName, price) {
+  document.getElementById('booking-test-id').value = testId;
+  document.getElementById('modal-test-name').textContent = testName;
+  document.getElementById('modal-test-price').textContent = '₹' + price.toFixed(2);
+  document.getElementById('lab-booking-modal').classList.add('active');
+}
+
+function closeBookingModal() {
+  document.getElementById('lab-booking-modal').classList.remove('active');
+}
+
+async function handleLabBookingSubmit(event) {
+  event.preventDefault();
+  const btn = document.getElementById('booking-submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Confirming Appointment...';
+
+  const payload = {
+    test_id: parseInt(document.getElementById('booking-test-id').value),
+    patient_name: document.getElementById('patient-name').value.trim(),
+    patient_phone: document.getElementById('patient-phone').value.trim(),
+    phone: document.getElementById('patient-phone').value.trim(),
+    patient_age: parseInt(document.getElementById('patient-age').value),
+    patient_gender: document.getElementById('patient-gender').value,
+    booking_date: document.getElementById('booking-date').value,
+    time_slot: document.getElementById('booking-slot').value,
+    address: document.getElementById('booking-address').value.trim(),
+    pincode: document.getElementById('booking-pincode').value.trim()
+  };
+
+  try {
+    const res = await fetch('/api/lab-tests/book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(`Booking ${data.booking_number} confirmed! Our phlebotomist will arrive on schedule.`, 'success');
+      closeBookingModal();
+      setTimeout(() => {
+        window.location.href = "{{ url_for('profile', tab='lab_bookings') }}";
+      }, 1500);
+    } else {
+      showToast(data.message || 'Booking failed', 'error');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check"></i> Confirm Free Home Sample Booking';
+    }
+  } catch (err) {
+    showToast('Failed to connect to booking server', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check"></i> Confirm Free Home Sample Booking';
+  }
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmed #{{ order.order_number }} | PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 760px; margin: 40px auto 60px auto;">
+  
+  <div class="cart-items-card" style="text-align: center; padding: 40px 30px;">
+    
+    <div style="width: 70px; height: 70px; border-radius: 50%; background: #e8f7f5; color: #10847e; font-size: 36px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+      <i class="fas fa-check"></i>
+    </div>
+
+    <h1 style="font-size: 26px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px;">Order Placed Successfully!</h1>
+    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 24px;">
+      Thank you for shopping with PharmEasy. Your medicines are being prepared by our registered pharmacy team.
+    </p>
+
+    <!-- Order Metadata Pill -->
+    <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px 20px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 14px; text-align: left; margin-bottom: 30px;">
+      <div>
+        <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: 700;">Order Number</div>
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-dark);">{{ order.order_number }}</div>
+      </div>
+      <div>
+        <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: 700;">Payment Mode</div>
+        <div style="font-size: 14px; font-weight: 800; color: #10847e;">{{ order.payment_method }} ({{ order.payment_status }})</div>
+      </div>
+      <div>
+        <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: 700;">Delivery Slot</div>
+        <div style="font-size: 14px; font-weight: 800; color: var(--text-dark);">{{ order.delivery_slot }}</div>
+      </div>
+      <div>
+        <div style="font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: 700;">Total Paid</div>
+        <div style="font-size: 16px; font-weight: 800; color: var(--primary);">₹{{ "%.2f"|format(order.total_amount) }}</div>
+      </div>
+    </div>
+
+    <!-- Status Tracking Timeline Stepper -->
+    <div style="margin-bottom: 36px; text-align: left;">
+      <h3 style="font-size: 15px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px;">
+        <i class="fas fa-route" style="color: #10847e; margin-right: 6px;"></i> Order Tracking
+      </h3>
+
+      <div style="display: flex; justify-content: space-between; position: relative;">
+        <!-- Track line -->
+        <div style="position: absolute; top: 16px; left: 30px; right: 30px; height: 3px; background: #e2e8f0; z-index: 1;"></div>
+        <div style="position: absolute; top: 16px; left: 30px; width: {{ '15%' if order.order_status == 'Placed' else ('50%' if order.order_status == 'Processing' else ('80%' if order.order_status == 'Dispatched' else '100%')) }}; height: 3px; background: #10847e; z-index: 1;"></div>
+
+        <!-- Step 1: Placed -->
+        <div style="position: relative; z-index: 2; text-align: center; width: 80px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: #10847e; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; margin-bottom: 6px;">
+            <i class="fas fa-check"></i>
+          </div>
+          <div style="font-size: 12px; font-weight: 700; color: #10847e;">Order Placed</div>
+        </div>
+
+        <!-- Step 2: Processing -->
+        <div style="position: relative; z-index: 2; text-align: center; width: 80px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ '#10847e' if order.order_status in ['Processing', 'Dispatched', 'Delivered'] else '#e2e8f0' }}; color: {{ '#fff' if order.order_status in ['Processing', 'Dispatched', 'Delivered'] else '#64748b' }}; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; margin-bottom: 6px;">
+            <i class="fas fa-box-open"></i>
+          </div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-dark);">Packed</div>
+        </div>
+
+        <!-- Step 3: Dispatched -->
+        <div style="position: relative; z-index: 2; text-align: center; width: 80px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ '#10847e' if order.order_status in ['Dispatched', 'Delivered'] else '#e2e8f0' }}; color: {{ '#fff' if order.order_status in ['Dispatched', 'Delivered'] else '#64748b' }}; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; margin-bottom: 6px;">
+            <i class="fas fa-truck"></i>
+          </div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-dark);">Dispatched</div>
+        </div>
+
+        <!-- Step 4: Delivered -->
+        <div style="position: relative; z-index: 2; text-align: center; width: 80px;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: {{ '#10847e' if order.order_status == 'Delivered' else '#e2e8f0' }}; color: {{ '#fff' if order.order_status == 'Delivered' else '#64748b' }}; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; margin-bottom: 6px;">
+            <i class="fas fa-home"></i>
+          </div>
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-dark);">Delivered</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items in Order -->
+    <div style="text-align: left; margin-bottom: 30px;">
+      <h3 style="font-size: 15px; font-weight: 800; color: var(--text-dark); margin-bottom: 12px;">Items in this order:</h3>
+      <div style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden;">
+        {% for item in order['order_items'] %}
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f1f5f9;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              {% if item.image_url %}
+                <img src="{{ item.image_url }}" alt="" style="width: 40px; height: 40px; object-fit: contain;" />
+              {% endif %}
+              <div>
+                <div style="font-size: 13px; font-weight: 700;">{{ item.product_name }}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Qty: {{ item.quantity }} | {{ item.packaging or '' }}</div>
+              </div>
+            </div>
+            <div style="font-weight: 800; font-size: 14px; color: var(--primary);">₹{{ "%.2f"|format(item.subtotal) }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 14px;">
+      <a href="{{ url_for('profile', tab='orders') }}" class="btn-primary">
+        <i class="fas fa-box"></i> View in Order History
+      </a>
+      <a href="{{ url_for('home') }}" class="btn-outline">
+        Continue Shopping
+      </a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}My Account & Order History | PharmEasy{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 24px; margin-bottom: 60px;">
+  
+  <nav class="breadcrumb-nav">
+    <a href="{{ url_for('home') }}">Home</a>
+    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+    <span style="color: var(--text-dark); font-weight: 600;">My Account</span>
+  </nav>
+
+  <div class="product-listing-layout" style="grid-template-columns: 280px 1fr;">
+    
+    <!-- Left Navigation Profile Sidebar -->
+    <aside class="filters-sidebar" style="padding: 0; overflow: hidden;">
+      <div style="padding: 24px 20px; background: linear-gradient(135deg, #10847e 0%, #095955 100%); color: #ffffff;">
+        <div style="width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px;">
+          <i class="fas fa-user"></i>
+        </div>
+        <h2 style="font-size: 18px; font-weight: 800;">{{ user.name }}</h2>
+        <div style="font-size: 12px; opacity: 0.9;">{{ user.email }}</div>
+        <div style="font-size: 12px; opacity: 0.9;"><i class="fas fa-phone-alt" style="font-size: 10px;"></i> {{ user.phone }}</div>
+      </div>
+
+      <div style="padding: 12px 0;">
+        <a href="{{ url_for('profile', tab='orders') }}" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: {{ '#10847e' if active_tab == 'orders' else 'var(--text-dark)' }}; background: {{ '#e8f7f5' if active_tab == 'orders' else 'transparent' }};">
+          <i class="fas fa-box" style="width: 20px;"></i> My Medicine Orders
+        </a>
+        <a href="{{ url_for('profile', tab='lab_bookings') }}" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: {{ '#10847e' if active_tab == 'lab_bookings' else 'var(--text-dark)' }}; background: {{ '#e8f7f5' if active_tab == 'lab_bookings' else 'transparent' }};">
+          <i class="fas fa-flask" style="width: 20px;"></i> Diagnostic Bookings
+        </a>
+        <a href="{{ url_for('profile', tab='prescriptions') }}" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: {{ '#10847e' if active_tab == 'prescriptions' else 'var(--text-dark)' }}; background: {{ '#e8f7f5' if active_tab == 'prescriptions' else 'transparent' }};">
+          <i class="fas fa-file-medical-alt" style="width: 20px;"></i> My Prescriptions
+        </a>
+        <a href="{{ url_for('profile', tab='addresses') }}" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: {{ '#10847e' if active_tab == 'addresses' else 'var(--text-dark)' }}; background: {{ '#e8f7f5' if active_tab == 'addresses' else 'transparent' }};">
+          <i class="fas fa-map-marker-alt" style="width: 20px;"></i> Saved Delivery Addresses
+        </a>
+        {% if user.role == 'admin' %}
+          <a href="{{ url_for('admin_dashboard') }}" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; font-weight: 700; color: #ff6f61;">
+            <i class="fas fa-shield-alt" style="width: 20px;"></i> Admin Dashboard
+          </a>
+        {% endif %}
+        <div style="border-top: 1px solid var(--border-color); margin: 8px 0;"></div>
+        <a href="{{ url_for('logout') }}" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; font-size: 14px; font-weight: 600; color: #ef4444;">
+          <i class="fas fa-sign-out-alt" style="width: 20px;"></i> Sign Out
+        </a>
+      </div>
+    </aside>
+
+    <!-- Right Main Tab View -->
+    <main>
+      
+      <!-- TAB 1: ORDERS -->
+      {% if active_tab == 'orders' %}
+        <div class="cart-items-card">
+          <h2 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 20px;">
+            Order History & Status
+          </h2>
+
+          {% if orders %}
+            <div style="display: flex; flex-direction: column; gap: 18px;">
+              {% for ord in orders %}
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px; background: #ffffff;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
+                    <div>
+                      <div style="font-weight: 800; font-size: 15px;">Order #{{ ord.order_number }}</div>
+                      <div style="font-size: 12px; color: var(--text-light);">Placed on {{ ord.created_at }}</div>
+                    </div>
+                    <div>
+                      <span class="status-badge {{ 'status-delivered' if ord.order_status == 'Delivered' else ('status-dispatched' if ord.order_status == 'Dispatched' else ('status-processing' if ord.order_status == 'Processing' else 'status-placed')) }}">
+                        {{ ord.order_status }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Order Items List -->
+                  <div style="margin-bottom: 14px;">
+                    {% for item in ord['order_items'] %}
+                      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                        <span>{{ item.quantity }}x {{ item.product_name }}</span>
+                        <span style="font-weight: 700;">₹{{ "%.2f"|format(item.subtotal) }}</span>
+                      </div>
+                    {% endfor %}
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                    <div>
+                      <span style="font-size: 12px; color: var(--text-muted);">Total Paid ({{ ord.payment_method }}):</span>
+                      <span style="font-size: 16px; font-weight: 800; color: var(--primary); margin-left: 6px;">₹{{ "%.2f"|format(ord.total_amount) }}</span>
+                    </div>
+                    <a href="{{ url_for('order_success', order_number=ord.order_number) }}" class="btn-outline" style="font-size: 12px; padding: 6px 14px;">
+                      <i class="fas fa-eye"></i> Track Order
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div style="text-align: center; padding: 40px 0; color: var(--text-muted);">
+              <i class="fas fa-box-open" style="font-size: 40px; color: #cbd5e1; margin-bottom: 12px;"></i>
+              <p>You haven't placed any medicine orders yet.</p>
+              <a href="{{ url_for('products') }}" class="btn-primary" style="margin-top: 14px;">Start Shopping</a>
+            </div>
+          {% endif %}
+        </div>
+
+      <!-- TAB 2: LAB BOOKINGS -->
+      {% elif active_tab == 'lab_bookings' %}
+        <div class="cart-items-card">
+          <h2 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 20px;">
+            My Diagnostic Lab Bookings
+          </h2>
+
+          {% if lab_bookings %}
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              {% for b in lab_bookings %}
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div>
+                      <div style="font-weight: 800; font-size: 15px; color: var(--primary);">{{ b.test_name }}</div>
+                      <div style="font-size: 12px; color: var(--text-light);">Booking Reference: {{ b.booking_number }}</div>
+                    </div>
+                    <span class="status-badge status-delivered">{{ b.status }}</span>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; color: var(--text-muted); background: #f8fafc; padding: 12px; border-radius: var(--radius-sm); margin-bottom: 10px;">
+                    <div><strong>Patient:</strong> {{ b.patient_name }} ({{ b.patient_age }}y, {{ b.patient_gender }})</div>
+                    <div><strong>Date & Slot:</strong> {{ b.booking_date }} | {{ b.time_slot }}</div>
+                    <div><strong>Collection Address:</strong> {{ b.sample_collection_address }} ({{ b.pincode }})</div>
+                    <div><strong>Amount:</strong> ₹{{ "%.2f"|format(b.total_amount) }} (Free Sample Collection)</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div style="text-align: center; padding: 40px 0; color: var(--text-muted);">
+              <i class="fas fa-flask" style="font-size: 40px; color: #cbd5e1; margin-bottom: 12px;"></i>
+              <p>No active lab bookings found.</p>
+              <a href="{{ url_for('lab_tests') }}" class="btn-primary" style="margin-top: 14px;">Book a Full Body Checkup</a>
+            </div>
+          {% endif %}
+        </div>
+
+      <!-- TAB 3: PRESCRIPTIONS -->
+      {% elif active_tab == 'prescriptions' %}
+        <div class="cart-items-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 18px; font-weight: 800; color: var(--text-dark);">
+              Uploaded Prescriptions
+            </h2>
+            <a href="{{ url_for('prescription') }}" class="btn-primary" style="font-size: 12px; padding: 8px 16px;">
+              <i class="fas fa-upload"></i> Upload New Prescription
+            </a>
+          </div>
+
+          {% if prescriptions %}
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              {% for rx in prescriptions %}
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px; display: flex; align-items: center; justify-content: space-between;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 14px;">Patient: {{ rx.patient_name }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Uploaded on {{ rx.created_at }} | Contact: {{ rx.phone }}</div>
+                    {% if rx.notes %}
+                      <div style="font-size: 12px; color: var(--text-light); margin-top: 4px;">Notes: {{ rx.notes }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 14px;">
+                    <span class="status-badge status-processing">{{ rx.status }}</span>
+                    <a href="{{ rx.file_path }}" target="_blank" class="btn-outline" style="font-size: 12px; padding: 6px 12px;">
+                      <i class="fas fa-file-download"></i> View File
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div style="text-align: center; padding: 40px 0; color: var(--text-muted);">
+              <i class="fas fa-file-medical" style="font-size: 40px; color: #cbd5e1; margin-bottom: 12px;"></i>
+              <p>No prescriptions uploaded yet.</p>
+              <a href="{{ url_for('prescription') }}" class="btn-primary" style="margin-top: 14px;">Upload Prescription</a>
+            </div>
+          {% endif %}
+        </div>
+
+      <!-- TAB 4: SAVED ADDRESSES -->
+      {% elif active_tab == 'addresses' %}
+        <div class="cart-items-card">
+          <h2 style="font-size: 18px; font-weight: 800; color: var(--text-dark); margin-bottom: 20px;">
+            Saved Delivery Addresses
+          </h2>
+
+          {% if addresses %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              {% for addr in addresses %}
+                <div style="border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 18px; position: relative;">
+                  {% if addr.is_default %}
+                    <span style="position: absolute; top: 12px; right: 12px; background: #e8f7f5; color: #10847e; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px;">Default</span>
+                  {% endif %}
+                  <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">{{ addr.full_name }} <span style="background: #f1f5f9; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">{{ addr.address_type }}</span></div>
+                  <div style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">{{ addr.address_line1 }}, {{ addr.address_line2 }}</div>
+                  <div style="font-size: 13px; color: var(--text-muted);">{{ addr.city }}, {{ addr.state }} - {{ addr.pincode }}</div>
+                  <div style="font-size: 12px; color: var(--text-light); margin-top: 6px;"><i class="fas fa-phone-alt" style="font-size: 10px;"></i> {{ addr.phone }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div style="text-align: center; padding: 40px 0; color: var(--text-muted);">
+              <i class="fas fa-map-marker-alt" style="font-size: 40px; color: #cbd5e1; margin-bottom: 12px;"></i>
+              <p>No saved addresses found. Addresses will be automatically saved during checkout.</p>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </main>
+  </div>
+
+</div>
+{% endblock %}
