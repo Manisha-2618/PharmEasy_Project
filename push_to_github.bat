@@ -1,10 +1,10 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 cd /d "%~dp0"
-title Push PharmEasy Project to GitHub
+title Push PharmEasy Project to GitHub (Manisha-2618)
 
 echo ========================================================
-echo       Push PharmEasy Project to Your GitHub
+echo       Push PharmEasy Project to GitHub (Manisha-2618)
 echo ========================================================
 echo.
 
@@ -19,40 +19,56 @@ if exist "%LOCALAPPDATA%\Microsoft\WinGet\Packages\GitHub.cli_Microsoft.Winget.S
     set "GH_EXE=%LOCALAPPDATA%\Microsoft\WinGet\Packages\GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe\bin\gh.exe"
 )
 
-echo Select how you want to push to GitHub:
-echo [1] Enter an existing GitHub repository URL (e.g. https://github.com/username/repo.git)
-echo [2] Login with GitHub CLI and create a new repository automatically
+echo Target Profile: https://github.com/Manisha-2618
 echo.
-set /p CHOICE="Enter choice (1 or 2): "
+echo Choose an option:
+echo [1] Login via GitHub CLI (Recommended - 1-Click Web Authorization)
+echo [2] Push using Personal Access Token (PAT)
+echo [3] Push to existing remote repository
+echo.
+set /p CHOICE="Enter choice (1, 2, or 3): "
 
 if "%CHOICE%"=="1" (
     echo.
-    set /p REPO_URL="Paste your GitHub repository URL: "
-    if "!REPO_URL!"=="" (
-        echo Error: No URL entered.
+    echo ----------------------------------------------------
+    echo Step 1: Authorizing GitHub in your browser...
+    echo (A browser window will open, or copy the one-time code shown)
+    echo ----------------------------------------------------
+    "%GH_EXE%" auth login --web --git-protocol https
+    echo.
+    echo ----------------------------------------------------
+    echo Step 2: Creating repository 'PharmEasy_Project' and pushing...
+    echo ----------------------------------------------------
+    "%GH_EXE%" repo create PharmEasy_Project --public --source=. --remote=origin --push
+    if !ERRORLEVEL! neq 0 (
+        echo.
+        echo If the repository already exists, pushing directly:
+        "%GIT_EXE%" push -u origin main
+    )
+) else if "%CHOICE%"=="2" (
+    echo.
+    echo Create a token at: https://github.com/settings/tokens (Select 'repo' scope)
+    set /p PAT="Paste your GitHub Personal Access Token: "
+    if "!PAT!"=="" (
+        echo Error: No token provided.
         pause
         exit /b 1
     )
-    "%GIT_EXE%" remote remove origin >nul 2>&1
-    "%GIT_EXE%" remote add origin !REPO_URL!
-    "%GIT_EXE%" branch -M main
-    echo Pushing to GitHub...
+    echo Configuring authenticated remote...
+    "%GIT_EXE%" remote set-url origin https://Manisha-2618:!PAT!@github.com/Manisha-2618/PharmEasy_Project.git
+    echo Pushing code to GitHub...
     "%GIT_EXE%" push -u origin main
-) else if "%CHOICE%"=="2" (
-    echo.
-    echo Opening GitHub CLI authentication...
-    "%GH_EXE%" auth login -w -p https
-    echo.
-    set /p REPO_NAME="Enter new repo name [default: pharmeasy-clone]: "
-    if "!REPO_NAME!"=="" set "REPO_NAME=pharmeasy-clone"
-    echo Creating repository !REPO_NAME! and pushing...
-    "%GH_EXE%" repo create !REPO_NAME! --public --source=. --remote=origin --push
+    REM Reset URL so token is not left in plain text remote config
+    "%GIT_EXE%" remote set-url origin https://github.com/Manisha-2618/PharmEasy_Project.git
+) else if "%CHOICE%"=="3" (
+    echo Pushing code to origin...
+    "%GIT_EXE%" push -u origin main
 ) else (
     echo Invalid choice.
 )
 
 echo.
 echo ========================================================
-echo Done!
+echo Process finished! Check: https://github.com/Manisha-2618/PharmEasy_Project
 echo ========================================================
 pause
